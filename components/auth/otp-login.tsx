@@ -19,6 +19,8 @@ export function OTPLogin() {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [resendTimer, setResendTimer] = useState(0)
+  const [languageStatus, setLanguageStatus] = useState(false)
+
 
   const validateMobileNumber = (num: string) => {
     return num.length === 10 && /^\d+$/.test(num)
@@ -101,19 +103,18 @@ export function OTPLogin() {
 
         {/* Language Selector */}
         <div className="relative group">
-          <button className="p-2.5 rounded-full bg-white dark:bg-slate-700 shadow-lg hover:shadow-xl transition-all border border-gray-200 dark:border-slate-600 text-sm font-medium">
+          <button onClick={() => setLanguageStatus((pre: boolean) => !pre)} className="p-2.5 rounded-full bg-white dark:bg-slate-700 shadow-lg hover:shadow-xl transition-all border border-gray-200 dark:border-slate-600 text-sm font-medium">
             {language.toUpperCase()}
           </button>
-          <div className="hidden group-hover:flex absolute right-0 mt-2 flex-col bg-white dark:bg-slate-700 rounded-lg shadow-xl border border-gray-200 dark:border-slate-600 overflow-hidden">
-            {languages.map((lang) => (
+          <div className="group-hover:flex absolute right-0 mt-2 flex-col bg-white dark:bg-slate-700 rounded-lg shadow-xl border border-gray-200 dark:border-slate-600 overflow-hidden">
+            {languageStatus && languages.map((lang) => (
               <button
                 key={lang.code}
                 onClick={() => setLanguage(lang.code)}
-                className={`px-4 py-2 text-sm text-left hover:bg-gray-100 dark:hover:bg-slate-600 transition-colors ${
-                  language === lang.code
+                className={`px-4 py-2 text-sm text-left hover:bg-gray-100 dark:hover:bg-slate-600 transition-colors ${language === lang.code
                     ? 'bg-blue-50 dark:bg-blue-900 text-blue-600 dark:text-blue-300 font-medium'
                     : 'text-slate-700 dark:text-slate-200'
-                }`}
+                  }`}
               >
                 {lang.label}
               </button>
@@ -138,9 +139,8 @@ export function OTPLogin() {
           <div className="space-y-4">
             {/* Step 1: Mobile Number */}
             <div
-              className={`overflow-hidden transition-all duration-300 ${
-                step === 1 ? 'max-h-32 opacity-100' : 'max-h-0 opacity-0'
-              }`}
+              className={`overflow-hidden transition-all duration-300 ${step === 1 ? 'max-h-64 opacity-100' : 'max-h-0 opacity-0'
+                }`}
             >
               <div className="space-y-3">
                 <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">
@@ -170,9 +170,8 @@ export function OTPLogin() {
 
             {/* Step 2: OTP Verification */}
             <div
-              className={`overflow-hidden transition-all duration-300 ${
-                step === 2 ? 'max-h-56 opacity-100' : 'max-h-0 opacity-0'
-              }`}
+              className={`overflow-hidden transition-all duration-300 ${step === 2 ? 'max-h-56 opacity-100' : 'max-h-0 opacity-0'
+                }`}
             >
               <div className="space-y-3">
                 <div className="flex justify-between items-center">
