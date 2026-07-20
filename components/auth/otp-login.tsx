@@ -6,6 +6,8 @@ import { useLanguage, Language } from '@/components/contexts/language-context'
 import { useAuth } from '@/components/contexts/auth-context'
 import { useRouter } from 'next/navigation'
 import { Moon, Sun } from 'lucide-react'
+import { useSendOtp, useVerifyOtp } from '@/hook/useAuth'
+import toast from "react-hot-toast";
 
 export function OTPLogin() {
   const router = useRouter()
@@ -20,6 +22,9 @@ export function OTPLogin() {
   const [loading, setLoading] = useState(false)
   const [resendTimer, setResendTimer] = useState(0)
   const [languageStatus, setLanguageStatus] = useState(false)
+
+  const sendOtp = useSendOtp();
+  const verifyOtp = useVerifyOtp();
 
 
   const validateMobileNumber = (num: string) => {
@@ -37,23 +42,26 @@ export function OTPLogin() {
       return
     }
 
-    setLoading(true)
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 500))
-    setLoading(false)
-    setStep(2)
-    setResendTimer(60)
+    await sendOtp.mutate({ phone: mobileNumber }, {
+      onError: (error: any) => {
+        toast.error(error.message || "Something went wrong");
+      }
+    });
+    if (sendOtp.isSuccess) {
+      setStep(2)
+      setResendTimer(60)
 
-    // Timer countdown
-    const interval = setInterval(() => {
-      setResendTimer((prev) => {
-        if (prev <= 1) {
-          clearInterval(interval)
-          return 0
-        }
-        return prev - 1
-      })
-    }, 1000)
+      // Timer countdown
+      const interval = setInterval(() => {
+        setResendTimer((prev) => {
+          if (prev <= 1) {
+            clearInterval(interval)
+            return 0
+          }
+          return prev - 1
+        })
+      }, 1000)
+    }
   }
 
   const handleVerifyOtp = async () => {
@@ -112,8 +120,8 @@ export function OTPLogin() {
                 key={lang.code}
                 onClick={() => setLanguage(lang.code)}
                 className={`px-4 py-2 text-sm text-left hover:bg-gray-100 dark:hover:bg-slate-600 transition-colors ${language === lang.code
-                    ? 'bg-blue-50 dark:bg-blue-900 text-blue-600 dark:text-blue-300 font-medium'
-                    : 'text-slate-700 dark:text-slate-200'
+                  ? 'bg-blue-50 dark:bg-blue-900 text-blue-600 dark:text-blue-300 font-medium'
+                  : 'text-slate-700 dark:text-slate-200'
                   }`}
               >
                 {lang.label}
@@ -163,7 +171,8 @@ export function OTPLogin() {
                   disabled={loading || mobileNumber.length < 10}
                   className="w-full py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white font-semibold rounded-lg transition-colors"
                 >
-                  {loading ? 'Sending...' : t('login.step1.button')}
+                  {sendOtp?.isPending ? 'Sending...' : t('login.step1.button')}
+
                 </button>
               </div>
             </div>

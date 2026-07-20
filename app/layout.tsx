@@ -5,6 +5,8 @@ import { ThemeProvider } from '@/components/contexts/theme-context'
 import { LanguageProvider } from '@/components/contexts/language-context'
 import { AuthProvider } from '@/components/contexts/auth-context'
 import { ServiceWorkerRegister } from '@/components/service-worker-register'
+import ApiProvider from '@/components/ApiProvider'
+import { Toaster } from "react-hot-toast";
 
 export const metadata: Metadata = {
   title: 'MSME Inventory Manager',
@@ -68,10 +70,14 @@ export default function RootLayout({
       </head>
       <body className="antialiased bg-background text-foreground" suppressHydrationWarning>
         <ServiceWorkerRegister />
+        <Toaster position="top-right" reverseOrder={false} />
+
         <AuthProvider>
           <LanguageProvider>
             <ThemeProvider>
-              {children}
+              <ApiProvider>
+                {children}
+              </ApiProvider>
               {process.env.NODE_ENV === 'production' && <Analytics />}
             </ThemeProvider>
           </LanguageProvider>
