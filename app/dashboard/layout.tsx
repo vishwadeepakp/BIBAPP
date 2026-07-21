@@ -1,7 +1,9 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { Menu } from 'lucide-react'
+
 import { useAuth } from '@/components/contexts/auth-context'
 import { Sidebar } from '@/components/dashboard/sidebar'
 import { Header } from '@/components/dashboard/header'
@@ -14,30 +16,43 @@ export default function DashboardLayout({
   const router = useRouter()
   const { isAuthenticated } = useAuth()
 
+  const [isOpen, setIsOpen] = useState(false)
+
   useEffect(() => {
     if (!isAuthenticated) {
       router.push('/')
     }
   }, [isAuthenticated, router])
 
-  if (!isAuthenticated) {
-    return null
-  }
+  if (!isAuthenticated) return null
 
   return (
-    <div className="flex">
+    <div className="flex min-h-screen">
       {/* Sidebar */}
-      <Sidebar />
+      <Sidebar isOpen={isOpen} setIsOpen={setIsOpen} />
 
       {/* Main Content */}
-      <div className="flex-1 lg:ml-64 pt-16 lg:pt-0">
+      <div
+        className={`flex-1 transition-all duration-300 ${
+          isOpen ? 'ml-64' : 'ml-0'
+        } lg:ml-64`}
+      >
         {/* Header */}
-        <div className="bg-white dark:bg-slate-800 border-b border-gray-200 dark:border-slate-700">
-          <Header />
-        </div>
+        <header className="sticky top-0 z-30 flex h-16 items-center bg-white dark:bg-slate-800 border-b border-gray-200 dark:border-slate-700 px-4">
+          <button
+            onClick={() => setIsOpen((prev) => !prev)}
+            className="lg:hidden mr-4"
+          >
+            <Menu className="w-6 h-6" />
+          </button>
 
-        {/* Page Content */}
-        <main className="p-4 lg:p-6 min-h-[calc(100vh-64px)]">
+          <div className="flex-1">
+            <Header />
+          </div>
+        </header>
+
+        {/* Content */}
+        <main className="p-4 lg:p-6">
           {children}
         </main>
       </div>

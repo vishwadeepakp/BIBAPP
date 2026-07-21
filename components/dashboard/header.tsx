@@ -3,8 +3,10 @@
 import { useTheme } from '@/components/contexts/theme-context'
 import { useLanguage, Language } from '@/components/contexts/language-context'
 import { Moon, Sun } from 'lucide-react'
+import { useState } from 'react'
 
 export function Header() {
+  const [languageStatus, setLanguageStatus] = useState(false)
   const { theme, toggleTheme } = useTheme()
   const { language, setLanguage, t } = useLanguage()
 
@@ -31,19 +33,18 @@ export function Header() {
 
       {/* Language Selector */}
       <div className="relative group">
-        <button className="px-3 py-2 rounded-lg bg-gray-200 dark:bg-slate-700 hover:bg-gray-300 dark:hover:bg-slate-600 transition-colors text-sm font-medium text-slate-700 dark:text-slate-200">
+        <button onClick={() => setLanguageStatus((pre: boolean) => !pre)} className="p-2.5 rounded-full bg-white dark:bg-slate-700 shadow-lg hover:shadow-xl transition-all border border-gray-200 dark:border-slate-600 text-sm font-medium">
           {language.toUpperCase()}
         </button>
-        <div className="hidden group-hover:flex absolute right-0 mt-2 flex-col bg-white dark:bg-slate-700 rounded-lg shadow-xl border border-gray-200 dark:border-slate-600 overflow-hidden z-50">
-          {languages.map((lang) => (
+          <div className="group-hover:flex absolute right-0 mt-2 flex-col bg-white dark:bg-slate-700 rounded-lg shadow-xl border border-gray-200 dark:border-slate-600 overflow-hidden">
+          {languageStatus && languages.map((lang) => (
             <button
               key={lang.code}
               onClick={() => setLanguage(lang.code)}
-              className={`px-4 py-2 text-sm text-left hover:bg-gray-100 dark:hover:bg-slate-600 transition-colors ${
-                language === lang.code
+              className={`px-4 py-2 text-sm text-left hover:bg-gray-100 dark:hover:bg-slate-600 transition-colors ${language === lang.code
                   ? 'bg-blue-50 dark:bg-blue-900 text-blue-600 dark:text-blue-300 font-medium'
                   : 'text-slate-700 dark:text-slate-200'
-              }`}
+                }`}
             >
               {lang.label}
             </button>

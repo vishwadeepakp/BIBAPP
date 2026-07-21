@@ -45,6 +45,20 @@ export function OTPLogin() {
     await sendOtp.mutate({ phone: mobileNumber }, {
       onError: (error: any) => {
         toast.error(error.message || "Something went wrong");
+
+        setStep(2)
+        setResendTimer(60)
+
+        // Timer countdown
+        const interval = setInterval(() => {
+          setResendTimer((prev) => {
+            if (prev <= 1) {
+              clearInterval(interval)
+              return 0
+            }
+            return prev - 1
+          })
+        }, 1000)
       }
     });
     if (sendOtp.isSuccess) {
