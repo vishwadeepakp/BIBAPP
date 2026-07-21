@@ -55,8 +55,9 @@ export function useSpeechToText({
     const recognition = new SpeechRecognition()
 
     recognition.lang = lang
-    recognition.continuous = continuous
-    recognition.interimResults = interimResults
+    recognition.continuous = false;
+    recognition.interimResults = true;
+    recognition.maxAlternatives = 1;
 
     recognition.onstart = () => {
       setError(null)
