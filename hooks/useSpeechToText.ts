@@ -70,6 +70,7 @@ export function useSpeechToText({
     recognition.onerror = (event: any) => {
       setError(event.error)
       setIsListening(false)
+      toast.error(event.error);
     }
 
     recognition.onresult = (event: any) => {
