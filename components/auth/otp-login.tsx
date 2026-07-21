@@ -6,7 +6,7 @@ import { useLanguage, Language } from '@/components/contexts/language-context'
 import { useAuth } from '@/components/contexts/auth-context'
 import { useRouter } from 'next/navigation'
 import { Moon, Sun } from 'lucide-react'
-import { useSendOtp, useVerifyOtp } from '@/hook/useAuth'
+import { useSendOtp, useVerifyOtp } from '@/hooks/useAuth'
 import toast from "react-hot-toast";
 
 export function OTPLogin() {

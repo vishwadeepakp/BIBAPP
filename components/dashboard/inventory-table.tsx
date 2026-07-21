@@ -2,7 +2,8 @@
 
 import { useState } from 'react'
 import { useLanguage } from '@/components/contexts/language-context'
-import { Search } from 'lucide-react'
+import { Search, Plus } from 'lucide-react'
+import { AddInventoryModal } from "./add-inventory-modal";
 
 interface InventoryItem {
   id: string
@@ -27,6 +28,7 @@ export function InventoryTable() {
   const { t } = useLanguage()
   const [searchTerm, setSearchTerm] = useState('')
   const [currentPage, setCurrentPage] = useState(1)
+  const [openModal, setOpenModal] = useState(false);
 
   const filteredItems = SAMPLE_INVENTORY.filter(
     (item) =>
@@ -65,7 +67,7 @@ export function InventoryTable() {
     }
   }
 
-  return (
+  return (<>
     <div className="space-y-6">
       <div>
         <h1 className="text-3xl font-bold text-slate-900 dark:text-white">
@@ -75,6 +77,14 @@ export function InventoryTable() {
           Manage your product inventory
         </p>
       </div>
+
+      <button
+        onClick={() => setOpenModal(true)}
+        className="flex items-center gap-2 rounded-lg bg-blue-600 px-5 py-3 text-white hover:bg-blue-700 transition"
+      >
+        <Plus className="w-5 h-5" />
+        Add Inventory
+      </button>
 
       {/* Search Bar */}
       <div className="relative">
@@ -162,11 +172,10 @@ export function InventoryTable() {
             <button
               key={page}
               onClick={() => setCurrentPage(page)}
-              className={`px-3 py-2 rounded-lg ${
-                currentPage === page
-                  ? 'bg-blue-600 text-white'
-                  : 'border border-gray-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-700'
-              }`}
+              className={`px-3 py-2 rounded-lg ${currentPage === page
+                ? 'bg-blue-600 text-white'
+                : 'border border-gray-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-700'
+                }`}
             >
               {page}
             </button>
@@ -181,5 +190,10 @@ export function InventoryTable() {
         </div>
       )}
     </div>
+    <AddInventoryModal
+      open={openModal}
+      onClose={() => setOpenModal(false)}
+    />
+  </>
   )
 }
