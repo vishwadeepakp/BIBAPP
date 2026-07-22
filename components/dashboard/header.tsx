@@ -3,14 +3,17 @@
 import { useTheme } from '@/components/contexts/theme-context'
 import { useLanguage, Language } from '@/components/contexts/language-context'
 import { Moon, Sun, Search, Bot, SendHorizontal } from "lucide-react";
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useSpeechToText } from '@/hooks/useSpeechToText'
+import { useSendText } from '@/hooks/useAi'
+
 
 export function Header() {
   const [languageStatus, setLanguageStatus] = useState(false)
   const [query, setQuery] = useState('')
   const { theme, toggleTheme } = useTheme()
   const { language, setLanguage, t } = useLanguage()
+
 
   const {
     transcript,
@@ -23,6 +26,14 @@ export function Header() {
       setQuery(text)
     },
   })
+
+  const sendText = useSendText()
+
+  useEffect(() => {
+    if (!isListening && query.trim() !== '') {
+      sendText.mutate({ query: transcript, language })
+    }
+  }, [isListening])
 
   const languages: { code: Language; label: string }[] = [
     { code: 'en', label: 'English' },
