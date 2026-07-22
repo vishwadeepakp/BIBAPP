@@ -24,11 +24,16 @@ export function useSpeechToText({
   onResult,
 }: UseSpeechToTextProps = {}) {
   const recognitionRef = useRef<any>(null)
+  const onResultRef = useRef(onResult);
 
   const [isListening, setIsListening] = useState(false)
   const [transcript, setTranscript] = useState('')
   const [supported, setSupported] = useState(true)
   const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    onResultRef.current = onResult;
+  }, [onResult]);
 
   useEffect(() => {
     if (isListening) {
@@ -81,7 +86,7 @@ export function useSpeechToText({
       }
 
       setTranscript(text)
-      onResult?.(text)
+      onResultRef.current?.(text)
     }
 
     recognitionRef.current = recognition
@@ -89,14 +94,18 @@ export function useSpeechToText({
     return () => {
       recognition.stop()
     }
-  }, [lang, continuous, interimResults, onResult])
+  }, [lang, continuous, interimResults])
 
   const startListening = useCallback(() => {
-    if (!recognitionRef.current || isListening) return
+    if (!recognitionRef.current) return;
+    if (isListening) return;
 
-    recognitionRef.current.start()
-
-  }, [isListening])
+    try {
+      recognitionRef.current.start();
+    } catch (e) {
+      console.error(e);
+    }
+  }, [isListening]);
 
   const stopListening = useCallback(() => {
     recognitionRef.current?.stop()
