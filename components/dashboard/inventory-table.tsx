@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { useLanguage } from '@/components/contexts/language-context'
 import { Search, Plus } from 'lucide-react'
 import { AddInventoryModal } from "./add-inventory-modal";
-import {useSearchParams, useRouter, usePathname} from 'next/navigation'
+import { useSearchParams, useRouter, usePathname } from 'next/navigation'
 
 interface InventoryItem {
   id: string
@@ -51,9 +51,9 @@ export function InventoryTable() {
   useEffect(() => {
     if (Object.keys(jsonObject).length > 0 && jsonObject.name) {
       setOpenModal(true);
-    } 
+    }
 
-   }, [jsonObject])
+  }, [jsonObject])
 
   const getStatusStyles = (status: string) => {
     switch (status) {
@@ -124,22 +124,22 @@ export function InventoryTable() {
 
       {/* Table */}
       <div className="bg-white dark:bg-slate-800 rounded-xl shadow-md border border-gray-200 dark:border-slate-700 overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full">
+        <div className="w-full overflow-x-scroll">
+          <table className="w-full  min-w-[800px]">
             <thead>
               <tr className="bg-gray-50 dark:bg-slate-700 border-b border-gray-200 dark:border-slate-600">
                 <th className="px-6 py-4 text-left text-sm font-semibold text-slate-900 dark:text-white">
                   {t('inventory.name')}
                 </th>
-                  <th className="px-6 py-4 text-left text-sm font-semibold text-slate-900 dark:text-white">
-                  {t('inventory.Category')}
-                </th> 
+                <th className="px-6 py-4 text-left text-sm font-semibold text-slate-900 dark:text-white">
+                  {t('inventory.category')}
+                </th>
                 <th className="px-6 py-4 text-left text-sm font-semibold text-slate-900 dark:text-white">
                   {t('inventory.quantity_per_package')}
-                </th> 
+                </th>
                 <th className="px-6 py-4 text-left text-sm font-semibold text-slate-900 dark:text-white">
                   {t('inventory.unit')}
-                </th> 
+                </th>
                 {/* <th className="px-6 py-4 text-left text-sm font-semibold text-slate-900 dark:text-white">
                   {t('inventory.sku')}
                 </th> */}

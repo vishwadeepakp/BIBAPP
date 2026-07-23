@@ -33,9 +33,8 @@ export default function DashboardLayout({
 
       {/* Main Content */}
       <div
-        className={`flex-1 transition-all duration-300 ${
-          isOpen ? 'ml-64' : 'ml-0'
-        } lg:ml-64`}
+        className={`flex-1 min-w-0 transition-all duration-300 ${isOpen ? 'ml-64' : 'ml-0'
+          } lg:ml-64`}
       >
         {/* Header */}
         <header className="sticky top-0 z-30 flex h-16 items-center bg-white dark:bg-slate-800 border-b border-gray-200 dark:border-slate-700 px-4">
