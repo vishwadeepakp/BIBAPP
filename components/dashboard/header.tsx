@@ -32,29 +32,29 @@ export function Header() {
 
   const sendText = useSendText()
 
-  useEffect( () => {
+  useEffect(() => {
     if (!isListening && query.trim() !== '') {
       sendText.mutate({ query: transcript, language });
     }
   }, [isListening])
 
-    useEffect( () => {
-      const data = sendText?.data?.data
-      const action_type = data?.action_type
-      console.log("sendText.data", data, action_type)
+  useEffect(() => {
+    const data = sendText?.data?.data
+    const action_type = data?.action_type
+    console.log("sendText.data", data, action_type)
 
-      if(data && sendText?.data){
-        if(action_type == "ADD_PRODUCT"){
-          const jsonData = data?.product_details
-          const queryParams = new URLSearchParams(jsonData).toString();
-          route.push(`/dashboard/inventory?${queryParams}`)
-        } else if(action_type == "VIEW_PRODUCT"){
-          const productId = data?.data?.product_id
-          route.push(`/dashboard/inventory/${productId}`)
-        } else if(action_type == "VIEW_INVENTORY"){ 
+    if (data && sendText?.data) {
+      if (action_type == "ADD_PRODUCT") {
+        const jsonData = data?.product_details
+        const queryParams = new URLSearchParams(jsonData).toString();
+        route.push(`/dashboard/inventory?${queryParams}`)
+      } else if (action_type == "VIEW_PRODUCT") {
+        const productId = data?.data?.product_id
+        route.push(`/dashboard/inventory/${productId}`)
+      } else if (action_type == "VIEW_INVENTORY") {
         route.push(`/dashboard/inventory/`)
-        }
       }
+    }
   }, [sendText.data])
 
   const languages: { code: Language; label: string }[] = [
@@ -68,7 +68,7 @@ export function Header() {
 
       {/* Search */}
 
-      <div className="relative w-full max-w-md">
+      {/* <div className="relative w-full max-w-md">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
         <input
           value={query}
@@ -79,7 +79,7 @@ export function Header() {
         />
         <SendHorizontal className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
 
-      </div>
+      </div> */}
 
       <div className="flex items-center gap-3">
 

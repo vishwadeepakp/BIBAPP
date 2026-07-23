@@ -4,12 +4,13 @@ import { useState, useEffect } from 'react'
 import { useLanguage } from '@/components/contexts/language-context'
 import { Search, Plus } from 'lucide-react'
 import { AddInventoryModal } from "./add-inventory-modal";
-import {useSearchParams} from 'next/navigation'
+import {useSearchParams, useRouter, usePathname} from 'next/navigation'
 
 interface InventoryItem {
   id: string
   name: string
   sku: string
+  unit: string
   quantity: number
   status: 'in-stock' | 'low-stock' | 'out-of-stock'
 }
@@ -28,6 +29,8 @@ const SAMPLE_INVENTORY: InventoryItem[] = [
 export function InventoryTable() {
   const { t } = useLanguage()
   const searchParams = useSearchParams();
+  const route = useRouter();
+  const pathname = usePathname();
   const jsonObject = Object.fromEntries(searchParams.entries());
 
   const [searchTerm, setSearchTerm] = useState('')
@@ -46,11 +49,11 @@ export function InventoryTable() {
   const displayedItems = filteredItems.slice(startIndex, startIndex + itemsPerPage)
 
   useEffect(() => {
-    if (Object.keys(jsonObject).length > 0) {
+    if (Object.keys(jsonObject).length > 0 && jsonObject.name) {
       setOpenModal(true);
     } 
 
-   }, [])
+   }, [jsonObject])
 
   const getStatusStyles = (status: string) => {
     switch (status) {
@@ -77,6 +80,13 @@ export function InventoryTable() {
         return status
     }
   }
+
+  const closeModal = () => {
+    route.push(pathname); // Navigate back to the inventory page without query parameters
+    setTimeout(() => {
+      setOpenModal(false);
+    }, 300); // Delay to ensure the modal closes after navigation
+  };
 
   return (<>
     <div className="space-y-6">
@@ -121,11 +131,23 @@ export function InventoryTable() {
                 <th className="px-6 py-4 text-left text-sm font-semibold text-slate-900 dark:text-white">
                   {t('inventory.name')}
                 </th>
+                  <th className="px-6 py-4 text-left text-sm font-semibold text-slate-900 dark:text-white">
+                  {t('inventory.Category')}
+                </th> 
                 <th className="px-6 py-4 text-left text-sm font-semibold text-slate-900 dark:text-white">
+                  {t('inventory.quantity_per_package')}
+                </th> 
+                <th className="px-6 py-4 text-left text-sm font-semibold text-slate-900 dark:text-white">
+                  {t('inventory.unit')}
+                </th> 
+                {/* <th className="px-6 py-4 text-left text-sm font-semibold text-slate-900 dark:text-white">
                   {t('inventory.sku')}
-                </th>
+                </th> */}
                 <th className="px-6 py-4 text-center text-sm font-semibold text-slate-900 dark:text-white">
                   {t('inventory.quantity')}
+                </th>
+                <th className="px-6 py-4 text-center text-sm font-semibold text-slate-900 dark:text-white">
+                  {t('inventory.expiry')}
                 </th>
                 <th className="px-6 py-4 text-left text-sm font-semibold text-slate-900 dark:text-white">
                   {t('inventory.status')}
@@ -141,11 +163,20 @@ export function InventoryTable() {
                   <td className="px-6 py-4 text-sm text-slate-900 dark:text-white font-medium">
                     {item.name}
                   </td>
+                  <td className="px-6 py-4 text-sm text-slate-900 dark:text-white font-medium">
+                    {item.Category}
+                  </td>
                   <td className="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">
-                    {item.sku}
+                    {item.quantity_per_package}
+                  </td>
+                  <td className="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">
+                    {item.unit}
                   </td>
                   <td className="px-6 py-4 text-sm text-slate-900 dark:text-white text-center font-semibold">
                     {item.quantity}
+                  </td>
+                  <td className="px-6 py-4 text-sm text-slate-900 dark:text-white text-center font-semibold">
+                    {item.expiry ? new Date(item.expiry).toLocaleDateString() : 'N/A'}
                   </td>
                   <td className="px-6 py-4 text-sm">
                     <span
@@ -203,7 +234,7 @@ export function InventoryTable() {
     </div>
     <AddInventoryModal
       open={openModal}
-      onClose={() => setOpenModal(false)}
+      onClose={() => closeModal()}
       jsonObject={jsonObject}
     />
   </>

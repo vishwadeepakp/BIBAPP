@@ -31,6 +31,7 @@ export function AddInventoryModal({
     category: '',
     status: 'in-stock',
     description: '',
+    unit: '',
   })
 
   useEffect(() => {
@@ -39,7 +40,7 @@ export function AddInventoryModal({
         name: jsonObject.name || '',
         unit: jsonObject.unit || '',
         quantity_per_package: jsonObject.quantity_per_package || '',
-        quantity: jsonObject.quantity || '',
+        quantity: jsonObject.package_count || '',
         category: jsonObject.category || '',
         status: jsonObject.status || 'in-stock',
         description: jsonObject.description || '',
@@ -186,7 +187,7 @@ export function AddInventoryModal({
 
                 <input
                   type="text"
-                  placeholder="quantity per package"
+                  placeholder="unit"
                   value={formData.unit}
                   onChange={(e) =>
                     setFormData({
