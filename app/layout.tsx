@@ -9,14 +9,14 @@ import ApiProvider from '@/components/ApiProvider'
 import { Toaster } from "react-hot-toast";
 
 export const metadata: Metadata = {
-  title: 'MSME Inventory Manager',
+  title: 'VyaparAI MSME Inventory Manager',
   description: 'Manage your business inventory efficiently',
   generator: 'v0.app',
   manifest: '/manifest.json',
   appleWebApp: {
     capable: true,
     statusBarStyle: 'black-translucent',
-    title: 'MSME Inventory Manager',
+    title: 'VyaparAI MSME Inventory Manager',
   },
   icons: {
     icon: [

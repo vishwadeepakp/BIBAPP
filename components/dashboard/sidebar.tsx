@@ -6,6 +6,7 @@ import { X, BarChart3, Package, Receipt, LogOut } from 'lucide-react'
 
 import { useLanguage } from '@/components/contexts/language-context'
 import { useAuth } from '@/components/contexts/auth-context'
+import Image from 'next/image';
 
 interface SidebarProps {
   isOpen: boolean
@@ -61,13 +62,16 @@ export function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
         lg:translate-x-0`}
       >
         {/* Logo */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-slate-700">
-          <div>
-            <h2 className="text-xl font-bold text-blue-600">MSME</h2>
+        <div className="flex items-center border-b border-gray-200 dark:border-slate-700">
+            <div className="w-40 h-20  rounded-lg flex items-center justify-center">
+               <Image width={40} height={40} src="/icons/icon-removebg-preview.png" alt="VyaparAI Logo" className="w-40 h-20 text-primary-foreground" />
+            </div>
+          {/* <div>
+            <h2 className="text-xl font-bold text-blue-600">VyaparAI</h2>
             <p className="text-xs text-slate-500">
               Inventory Manager
             </p>
-          </div>
+          </div> */}
 
           <button
             className="lg:hidden"

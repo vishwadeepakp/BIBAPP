@@ -18,7 +18,7 @@ const LanguageContext = createContext<LanguageContextType | undefined>(undefined
 
 const translations: { [key in Language]: Translations } = {
   en: {
-    'login.title': 'MSME Inventory Manager',
+    'login.title': 'VyaparAI Inventory Manager',
     'login.subtitle': 'Manage your business inventory efficiently',
     'login.step1.label': 'Enter Mobile Number',
     'login.step1.placeholder': '10-digit mobile number',
@@ -53,7 +53,7 @@ const translations: { [key in Language]: Translations } = {
     'sales.pending': 'Pending',
   },
   hi: {
-    'login.title': 'MSME इन्वेंटरी प्रबंधक',
+    'login.title': 'VyaparAI इन्वेंटरी प्रबंधक',
     'login.subtitle': 'अपने व्यावसायिक इन्वेंटरी को कुशलतापूर्वक प्रबंधित करें',
     'login.step1.label': 'मोबाइल नंबर दर्ज करें',
     'login.step1.placeholder': '10 अंकों का मोबाइल नंबर',
@@ -88,7 +88,7 @@ const translations: { [key in Language]: Translations } = {
     'sales.pending': 'लंबित',
   },
   mr: {
-    'login.title': 'MSME इन्व्हेंटरी व्यवस्थापक',
+    'login.title': 'VyaparAI इन्व्हेंटरी व्यवस्थापक',
     'login.subtitle': 'आपल्या व्यावसायिक इन्व्हेंटरी कुशलतेने व्यवस्थापित करा',
     'login.step1.label': 'मोबाइल नंबर प्रविष्ट करा',
     'login.step1.placeholder': '10 अंकांचा मोबाइल नंबर',

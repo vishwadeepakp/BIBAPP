@@ -5,9 +5,17 @@ import toast from "react-hot-toast";
 export const useSendText = () => {
     return useMutation({
         mutationFn: async (payload: { query: string; language: string }) => {
+              toast.success(payload.query || "",{
+                position: "bottom-right",
+                duration: 6000,
+                style: {
+                    background: "#fff",
+                    color: "#0e0d0d",
+                },
+            });
             toast.loading("🎤 Thinking...", {
                 id: "AI-API",
-                position: "bottom-right"
+                position: "bottom-right",
             });
             const response = await fetch(`${process.env.NEXT_PUBLIC_API_GATWAY}/ai/send-text`, {
                 method: "POST",
@@ -26,6 +34,10 @@ export const useSendText = () => {
             toast.success(data?.data.voice_response || "Issue In Akash AI",{
                 position: "bottom-right",
                 duration: 6000,
+                style: {
+                    background: "#6ff7a3",
+                    color: "#0e0d0d",
+                },
             });
             return data;
         },
