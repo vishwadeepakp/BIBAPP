@@ -18,6 +18,7 @@ declare global {
 export function AddInventoryModal({
   open,
   onClose,
+  jsonObject
 }: AddInventoryModalProps) {
   const [isListening, setIsListening] = useState(false)
 
@@ -25,12 +26,26 @@ export function AddInventoryModal({
 
   const [formData, setFormData] = useState({
     name: '',
-    sku: '',
+    quantity_per_package: '',
     quantity: '',
     category: '',
     status: 'in-stock',
     description: '',
   })
+
+  useEffect(() => {
+    if (jsonObject) {
+      setFormData({
+        name: jsonObject.name || '',
+        unit: jsonObject.unit || '',
+        quantity_per_package: jsonObject.quantity_per_package || '',
+        quantity: jsonObject.quantity || '',
+        category: jsonObject.category || '',
+        status: jsonObject.status || 'in-stock',
+        description: jsonObject.description || '',
+      })
+    }
+  }, [jsonObject])
 
   useEffect(() => {
     if (typeof window === 'undefined') return
@@ -145,17 +160,38 @@ export function AddInventoryModal({
               <div>
 
                 <label className="mb-2 block text-sm font-medium">
-                  SKU
+                  Quantity per package
                 </label>
 
                 <input
                   type="text"
-                  placeholder="SKU"
-                  value={formData.sku}
+                  placeholder="quantity per package"
+                  value={formData.quantity_per_package}
                   onChange={(e) =>
                     setFormData({
                       ...formData,
-                      sku: e.target.value,
+                      quantity_per_package: e.target.value,
+                    })
+                  }
+                  className="w-full rounded-lg border border-slate-300 dark:border-slate-700 px-4 py-3"
+                />
+
+              </div>
+
+              <div>
+
+                <label className="mb-2 block text-sm font-medium">
+                 Unit
+                </label>
+
+                <input
+                  type="text"
+                  placeholder="quantity per package"
+                  value={formData.unit}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      unit: e.target.value,
                     })
                   }
                   className="w-full rounded-lg border border-slate-300 dark:border-slate-700 px-4 py-3"
@@ -275,7 +311,7 @@ export function AddInventoryModal({
             </div>
 
             {/* Upload */}
-
+{/* 
             <div>
 
               <label className="mb-2 block text-sm font-medium">
@@ -297,7 +333,7 @@ export function AddInventoryModal({
 
               </label>
 
-            </div>
+            </div> */}
 
           </div>
 

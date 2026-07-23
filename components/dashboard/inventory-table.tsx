@@ -1,9 +1,10 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useLanguage } from '@/components/contexts/language-context'
 import { Search, Plus } from 'lucide-react'
 import { AddInventoryModal } from "./add-inventory-modal";
+import {useSearchParams} from 'next/navigation'
 
 interface InventoryItem {
   id: string
@@ -26,6 +27,9 @@ const SAMPLE_INVENTORY: InventoryItem[] = [
 
 export function InventoryTable() {
   const { t } = useLanguage()
+  const searchParams = useSearchParams();
+  const jsonObject = Object.fromEntries(searchParams.entries());
+
   const [searchTerm, setSearchTerm] = useState('')
   const [currentPage, setCurrentPage] = useState(1)
   const [openModal, setOpenModal] = useState(false);
@@ -40,6 +44,13 @@ export function InventoryTable() {
   const totalPages = Math.ceil(filteredItems.length / itemsPerPage)
   const startIndex = (currentPage - 1) * itemsPerPage
   const displayedItems = filteredItems.slice(startIndex, startIndex + itemsPerPage)
+
+  useEffect(() => {
+    if (Object.keys(jsonObject).length > 0) {
+      setOpenModal(true);
+    } 
+
+   }, [])
 
   const getStatusStyles = (status: string) => {
     switch (status) {
@@ -193,6 +204,7 @@ export function InventoryTable() {
     <AddInventoryModal
       open={openModal}
       onClose={() => setOpenModal(false)}
+      jsonObject={jsonObject}
     />
   </>
   )

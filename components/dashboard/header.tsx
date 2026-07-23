@@ -6,9 +6,12 @@ import { Moon, Sun, Search, Bot, SendHorizontal } from "lucide-react";
 import { useEffect, useState } from 'react'
 import { useSpeechToText } from '@/hooks/useSpeechToText'
 import { useSendText } from '@/hooks/useAi'
+import { useRouter } from 'next/navigation'
 
 
 export function Header() {
+  const route = useRouter();
+
   const [languageStatus, setLanguageStatus] = useState(false)
   const [query, setQuery] = useState('')
   const { theme, toggleTheme } = useTheme()
@@ -29,11 +32,30 @@ export function Header() {
 
   const sendText = useSendText()
 
-  useEffect(() => {
+  useEffect( () => {
     if (!isListening && query.trim() !== '') {
-      sendText.mutate({ query: transcript, language })
+      sendText.mutate({ query: transcript, language });
     }
   }, [isListening])
+
+    useEffect( () => {
+      const data = sendText?.data?.data
+      const action_type = data?.action_type
+      console.log("sendText.data", data, action_type)
+
+      if(data && sendText?.data){
+        if(action_type == "ADD_PRODUCT"){
+          const jsonData = data?.product_details
+          const queryParams = new URLSearchParams(jsonData).toString();
+          route.push(`/dashboard/inventory?${queryParams}`)
+        } else if(action_type == "VIEW_PRODUCT"){
+          const productId = data?.data?.product_id
+          route.push(`/dashboard/inventory/${productId}`)
+        } else if(action_type == "VIEW_INVENTORY"){ 
+        route.push(`/dashboard/inventory/`)
+        }
+      }
+  }, [sendText.data])
 
   const languages: { code: Language; label: string }[] = [
     { code: 'en', label: 'English' },

@@ -7,7 +7,7 @@ export const useSendText = () => {
         mutationFn: async (payload: { query: string; language: string }) => {
               toast.success(payload.query || "",{
                 position: "bottom-right",
-                duration: 6000,
+                duration: 10000,
                 style: {
                     background: "#fff",
                     color: "#0e0d0d",
@@ -33,7 +33,7 @@ export const useSendText = () => {
             speakText(data?.data.voice_response || "Failed to send Text");
             toast.success(data?.data.voice_response || "Issue In Akash AI",{
                 position: "bottom-right",
-                duration: 6000,
+                duration: 10000,
                 style: {
                     background: "#6ff7a3",
                     color: "#0e0d0d",
