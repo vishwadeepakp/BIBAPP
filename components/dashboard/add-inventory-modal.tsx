@@ -21,6 +21,7 @@ export function AddInventoryModal({
   jsonObject
 }: AddInventoryModalProps) {
   const [isListening, setIsListening] = useState(false)
+  const [modelCount, setModelCount] = useState(1);
 
   const recognitionRef = useRef<any>(null)
 
@@ -35,18 +36,21 @@ export function AddInventoryModal({
   })
 
   useEffect(() => {
-    if (jsonObject) {
-      setFormData({
-        name: jsonObject.name || '',
-        unit: jsonObject.unit || '',
-        quantity_per_package: jsonObject.quantity_per_package || '',
-        quantity: jsonObject.package_count || '',
-        category: jsonObject.category || '',
-        status: jsonObject.status || 'in-stock',
-        description: jsonObject.description || '',
-      })
+    if (jsonObject && jsonObject.length > 0) {
+      const data = jsonObject[modelCount - 1];
+      if (data) {
+        setFormData({
+          name: data.name || '',
+          unit: data.unit || '',
+          quantity_per_package: data.quantity_per_package || '',
+          quantity: data.package_count || '',
+          category: data.category || '',
+          status: data.status || 'in-stock',
+          description: data.description || '',
+        })
+      }
     }
-  }, [jsonObject])
+  }, [jsonObject, modelCount])
 
   useEffect(() => {
     if (typeof window === 'undefined') return
@@ -110,6 +114,9 @@ export function AddInventoryModal({
 
                 <h2 className="text-xl font-bold text-slate-900 dark:text-white">
                   Add Inventory
+                  <span className="rounded-full bg-indigo-800/60 px-2 py-0.5 text-xs font-bold text-indigo-100 border border-indigo-400/30">
+                    {modelCount} / {jsonObject?.length}
+                  </span>
                 </h2>
 
                 <p className="text-sm text-slate-500">
@@ -182,7 +189,7 @@ export function AddInventoryModal({
               <div>
 
                 <label className="mb-2 block text-sm font-medium">
-                 Unit
+                  Unit
                 </label>
 
                 <input
@@ -312,7 +319,7 @@ export function AddInventoryModal({
             </div>
 
             {/* Upload */}
-{/* 
+            {/* 
             <div>
 
               <label className="mb-2 block text-sm font-medium">
@@ -343,13 +350,26 @@ export function AddInventoryModal({
           <div className="flex justify-end gap-3 border-t border-slate-200 dark:border-slate-700 px-6 py-5">
 
             <button
-              onClick={onClose}
+              onClick={() => {
+                if (modelCount < jsonObject.length) {
+                  setModelCount(modelCount + 1);
+                } else {
+                  onClose();
+                }
+              }}
               className="rounded-lg border border-slate-300 px-5 py-2 hover:bg-slate-100 dark:border-slate-700 dark:hover:bg-slate-800"
             >
               Cancel
             </button>
 
             <button
+              onClick={() => {
+                if (modelCount < jsonObject.length) {
+                  setModelCount(modelCount + 1);
+                } else {
+                  onClose();
+                }
+              }}
               className="rounded-lg bg-blue-600 px-6 py-2 font-medium text-white hover:bg-blue-700"
             >
               Save Product

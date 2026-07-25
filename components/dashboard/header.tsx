@@ -45,8 +45,8 @@ export function Header() {
 
     if (data && sendText?.data) {
       if (action_type == "ADD_PRODUCT") {
-        const jsonData = data?.product_details
-        const queryParams = new URLSearchParams(jsonData).toString();
+        const jsonData = { items: JSON.stringify(data?.product_details) }
+        const queryParams = new URLSearchParams(jsonData);
         route.push(`/dashboard/inventory?${queryParams}`)
       } else if (action_type == "VIEW_PRODUCT") {
         const productId = data?.data?.product_id

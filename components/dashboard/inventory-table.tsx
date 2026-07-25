@@ -32,6 +32,7 @@ export function InventoryTable() {
   const route = useRouter();
   const pathname = usePathname();
   const jsonObject = Object.fromEntries(searchParams.entries());
+  const items = jsonObject?.items ? JSON.parse(jsonObject.items) : null;
 
   const [searchTerm, setSearchTerm] = useState('')
   const [currentPage, setCurrentPage] = useState(1)
@@ -49,11 +50,12 @@ export function InventoryTable() {
   const displayedItems = filteredItems.slice(startIndex, startIndex + itemsPerPage)
 
   useEffect(() => {
-    if (Object.keys(jsonObject).length > 0 && jsonObject.name) {
+    console.log("jsonObject", jsonObject, items);
+    if (items && items.length > 0) {
       setOpenModal(true);
     }
 
-  }, [jsonObject])
+  }, [items])
 
   const getStatusStyles = (status: string) => {
     switch (status) {
@@ -235,7 +237,7 @@ export function InventoryTable() {
     <AddInventoryModal
       open={openModal}
       onClose={() => closeModal()}
-      jsonObject={jsonObject}
+      jsonObject={items}
     />
   </>
   )
