@@ -1,11 +1,12 @@
 import { useMutation } from "@tanstack/react-query";
 import toast from "react-hot-toast";
+import api from "@/api/axiosInstance"; // <--- आपका Axios instance import हो गया
 
 // Send Text
 export const useSendText = () => {
     return useMutation({
         mutationFn: async (payload: { query: string; language: string }) => {
-              toast.success(payload.query || "",{
+            toast.success(payload.query || "", {
                 position: "bottom-right",
                 duration: 10000,
                 style: {
@@ -13,33 +14,44 @@ export const useSendText = () => {
                     color: "#0e0d0d",
                 },
             });
+
             toast.loading("🎤 Thinking...", {
                 id: "AI-API",
                 position: "bottom-right",
             });
-            const response = await fetch(`${process.env.NEXT_PUBLIC_API_GATWAY}/ai/send-text`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify(payload),
-            });
-            const data = await response.json();
-            toast.dismiss("AI-API");
-            if (!response.ok) {
-                throw new Error(data?.error || data?.message || "Failed to send Text");
+
+            try {
+                // Axios Call: URL का Prefix, Content-Type, और credentials ऑटोमैटिक 'api' संभालेगा
+                const response = await api.post("/ai/send-text", payload);
+                const data = response.data;
+
+                toast.dismiss("AI-API");
+
+                console.log("Voice Response:", data);
+                speakText(data?.data?.voice_response || "Failed to send Text");
+
+                toast.success(data?.data?.voice_response || "Issue In Akash AI", {
+                    position: "bottom-right",
+                    duration: 10000,
+                    style: {
+                        background: "#6ff7a3",
+                        color: "#0e0d0d",
+                    },
+                });
+
+                return data;
+            } catch (error: any) {
+                toast.dismiss("AI-API");
+
+                // Axios error handling
+                const errorMessage =
+                    error?.response?.data?.error ||
+                    error?.response?.data?.message ||
+                    error?.message ||
+                    "Failed to send Text";
+
+                throw new Error(errorMessage);
             }
-            console.log("Voice Response:", data);
-            speakText(data?.data.voice_response || "Failed to send Text");
-            toast.success(data?.data.voice_response || "Issue In Akash AI",{
-                position: "bottom-right",
-                duration: 10000,
-                style: {
-                    background: "#6ff7a3",
-                    color: "#0e0d0d",
-                },
-            });
-            return data;
         },
     });
 };

@@ -39,7 +39,7 @@ const translations: { [key in Language]: Translations } = {
     'analytics.lowStock': 'Low Stock Items',
     'inventory.name': 'Product Name',
     'inventory.category': 'Category',
-    'inventory.quantity_per_package': 'per Package',
+    'inventory.quantity_per_package': 'Packages',
     'inventory.unit': 'Unit',
     'inventory.expiry': 'Expiry',
     'inventory.sku': 'SKU',

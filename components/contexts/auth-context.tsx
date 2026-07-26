@@ -35,9 +35,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, [])
 
-  const login = (mobileNumber: string) => {
+  const login = (mobileNumber: string, token: string) => {
     const newUser = {
       mobileNumber,
+      token,
       loginTime: new Date().toISOString(),
     }
     setUser(newUser)

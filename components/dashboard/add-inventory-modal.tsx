@@ -168,7 +168,7 @@ export function AddInventoryModal({
               <div>
 
                 <label className="mb-2 block text-sm font-medium">
-                  Quantity per package
+                  No of packages
                 </label>
 
                 <input

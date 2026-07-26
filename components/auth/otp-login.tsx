@@ -87,12 +87,17 @@ export function OTPLogin() {
 
     setLoading(true)
     // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 500))
+    // await new Promise((resolve) => setTimeout(resolve, 500))
+    await verifyOtp.mutate({ phone: mobileNumber, otp }, {
+      onSuccess: (data) => {
+        login({ mobileNumber, token: data.token })
+        router.push('/dashboard')
+      },
+      onError: (error: any) => {
+        toast.error(error.message || error.error || "Something went wrong");
+      }
+    });
     setLoading(false)
-
-    // Mock verification - accept any valid OTP
-    login(mobileNumber)
-    router.push('/dashboard')
   }
 
   const handleResendOtp = () => {
@@ -222,7 +227,7 @@ export function OTPLogin() {
                   disabled={loading || otp.length < 6}
                   className="w-full py-3 bg-green-600 hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white font-semibold rounded-lg transition-colors"
                 >
-                  {loading ? 'Verifying...' : t('login.step2.button')}
+                  {verifyOtp?.isPending ? 'Verifying...' : t('login.step2.button')}
                 </button>
 
                 {/* Resend OTP */}

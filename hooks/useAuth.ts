@@ -31,11 +31,13 @@ export const useVerifyOtp = () => {
         headers: {
           "Content-Type": "application/json",
         },
+        credentials: "include",
         body: JSON.stringify(payload),
       });
 
       if (!response.ok) {
-        throw new Error("Failed to verify OTP");
+        const errorData = await response.json();
+        throw new Error(errorData.message || errorData.error || "Failed to verify OTP");
       }
 
       return response.json();

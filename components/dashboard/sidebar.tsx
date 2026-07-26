@@ -62,7 +62,7 @@ export function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
         lg:translate-x-0`}
       >
         {/* Logo */}
-        <div className="flex items-center border-b border-gray-200 dark:border-slate-700">
+        <div className="flex items-center border-b border-gray-200 dark:border-slate-700 justify-between p-4">
             <div className="w-40 h-20  rounded-lg flex items-center justify-center">
                <Image width={40} height={40} src="/icons/icon-removebg-preview.png" alt="VyaparAI Logo" className="w-40 h-20 text-primary-foreground" />
             </div>
