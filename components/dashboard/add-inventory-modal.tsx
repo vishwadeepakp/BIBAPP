@@ -33,6 +33,7 @@ export function AddInventoryModal({
     status: 'in-stock',
     description: '',
     unit: '',
+    selling_price: '',
   })
 
   useEffect(() => {
@@ -47,6 +48,7 @@ export function AddInventoryModal({
           category: data.category || '',
           status: data.status || 'in-stock',
           description: data.description || '',
+          selling_price: data.selling_price || '',
         })
       }
     }
@@ -168,7 +170,7 @@ export function AddInventoryModal({
               <div>
 
                 <label className="mb-2 block text-sm font-medium">
-                  No of packages
+                  Quantity per Package
                 </label>
 
                 <input
@@ -227,7 +229,24 @@ export function AddInventoryModal({
                 />
 
               </div>
+              <div>
+                <label className="mb-2 block text-sm font-medium">
+                  Price
+                </label>
+                <input
+                  type="number"
+                  placeholder="0"
+                  value={formData.selling_price}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      selling_price: e.target.value,
+                    })
+                  }
+                  className="w-full rounded-lg border border-slate-300 dark:border-slate-700 px-4 py-3"
+                />
 
+              </div>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
