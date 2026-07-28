@@ -7,12 +7,16 @@ import { useEffect, useState } from 'react'
 import { useSpeechToText } from '@/hooks/useSpeechToText'
 import { useSendText } from '@/hooks/useAi'
 import { useRouter } from 'next/navigation'
+import InventoryModal from '@/components/dashboard/InventoryModal'
 
 
 export function Header() {
   const route = useRouter();
 
   const [languageStatus, setLanguageStatus] = useState(false)
+  const [isModalOpen, setIsModalOpen] = useState(false)
+  const [inventoryData, setInventoryData] = useState([])
+
   const [query, setQuery] = useState('')
   const { theme, toggleTheme } = useTheme()
   const { language, setLanguage, t } = useLanguage()
@@ -48,9 +52,9 @@ export function Header() {
         const jsonData = { items: JSON.stringify(data?.product_details) }
         const queryParams = new URLSearchParams(jsonData);
         route.push(`/dashboard/inventory?${queryParams}`)
-      } else if (action_type == "VIEW_PRODUCT") {
-        const productId = data?.data?.product_id
-        route.push(`/dashboard/inventory/${productId}`)
+      } else if (action_type == "SEARCH_PRODUCT") {
+        setIsModalOpen(true);
+        setInventoryData(data.data)
       } else if (action_type == "VIEW_INVENTORY") {
         route.push(`/dashboard/inventory/`)
       }
@@ -140,6 +144,11 @@ export function Header() {
         </div>
 
       </div>
+      <InventoryModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        data={inventoryData}
+      />
 
     </div>
   )

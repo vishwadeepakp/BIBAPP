@@ -56,6 +56,34 @@ export const useSendText = () => {
     });
 };
 
+export const useSaveInventoryData = () => {
+    return useMutation({
+        mutationFn: async (payload: any) => {
+            toast.loading("Saving...", {
+                id: "useSaveInventoryData-Saving",
+            });
+
+            try {
+                // Axios Call: URL का Prefix, Content-Type, और credentials ऑटोमैटिक 'api' संभालेगा
+                const response = await api.post("/ai/save-inventory-data", payload);
+                const data = response.data;
+                toast.dismiss("useSaveInventoryData-Saving");
+                toast.success('Saved');
+                return data;
+            } catch (error: any) {
+                toast.dismiss("useSaveInventoryData-Saving");
+                // Axios error handling
+                const errorMessage =
+                    error?.response?.data?.error ||
+                    error?.response?.data?.message ||
+                    error?.message ||
+                    "Failed to Save Data";
+                throw new Error(errorMessage);
+            }
+        },
+    });
+};
+
 function speakText(text: string) {
     // Check अगर ब्राउज़र Speech Synthesis सपोर्ट करता है
     if ('speechSynthesis' in window) {

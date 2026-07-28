@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react'
 import { Mic, X, Upload, Package } from 'lucide-react'
+import { useSaveInventoryData } from '@/hooks/useAi'
 
 interface AddInventoryModalProps {
   open: boolean
@@ -34,7 +35,11 @@ export function AddInventoryModal({
     description: '',
     unit: '',
     selling_price: '',
+    tags: []
   })
+
+  const saveInventoryData = useSaveInventoryData()
+
 
   useEffect(() => {
     if (jsonObject && jsonObject.length > 0) {
@@ -49,6 +54,7 @@ export function AddInventoryModal({
           status: data.status || 'in-stock',
           description: data.description || '',
           selling_price: data.selling_price || '',
+          tags: data.tags || [],
         })
       }
     }
@@ -247,6 +253,24 @@ export function AddInventoryModal({
                 />
 
               </div>
+              <div>
+                <label className="mb-2 block text-sm font-medium">
+                  Tags
+                </label>
+                <input
+                  type="text"
+                  placeholder="Tags"
+                  value={formData.tags.join(', ')}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      tags: [...formData.tags, e.target.value],
+                    })
+                  }
+                  className="w-full rounded-lg border border-slate-300 dark:border-slate-700 px-4 py-3"
+                />
+
+              </div>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
@@ -382,7 +406,9 @@ export function AddInventoryModal({
             </button>
 
             <button
-              onClick={() => {
+              onClick={async () => {
+                await saveInventoryData.mutateAsync(formData);
+
                 if (modelCount < jsonObject.length) {
                   setModelCount(modelCount + 1);
                 } else {
