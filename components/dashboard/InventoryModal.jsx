@@ -9,7 +9,7 @@ export default function InventoryModal({ isOpen, onClose, data = [] }) {
       if (e.key === 'Escape') onClose();
     };
     if (isOpen) {
-      document.body.style.overflow = 'hidden'; // Background scroll freeze
+      document.body.style.overflow = 'hidden';
       window.addEventListener('keydown', handleKeyDown);
     }
     return () => {
@@ -20,40 +20,111 @@ export default function InventoryModal({ isOpen, onClose, data = [] }) {
 
   if (!isOpen) return null;
 
-  // Date Formatting Helper
-  const formatDate = (dateString) => {
-    if (!dateString) return '-';
-    return new Date(dateString).toLocaleString('en-IN', {
-      day: '2-digit',
-      month: 'short',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-      hour12: true,
-    });
+  // 1. जिन कॉलम्स को टेबल में नहीं दिखाना है (Internal Fields)
+  const EXCLUDED_KEYS = ['id', 'user_id', 'raw_prompt', 'deleted_at'];
+
+  // 2. Dynamic Columns Extract करना (पहले ऑब्जेक्ट से)
+  const columns =
+    data && data.length > 0
+      ? Object.keys(data[0]).filter((key) => !EXCLUDED_KEYS.includes(key))
+      : [];
+
+  // 3. Header Title Formatter (e.g., "selling_price" -> "Selling Price")
+  const formatHeader = (key) => {
+    return key
+      .replace(/_/g, ' ')
+      .replace(/([A-Z])/g, ' $1')
+      .trim()
+      .replace(/\b\w/g, (char) => char.toUpperCase());
+  };
+
+  // 4. Dynamic Cell Renderer (हर डेटा टाइप के हिसाब से सुंदर UI)
+  const renderCellValue = (key, value) => {
+    if (value === null || value === undefined || value === '') {
+      return <span className="text-gray-400 text-xs">-</span>;
+    }
+
+    // Badge for Type (IN / OUT)
+    if (key === 'type') {
+      return (
+        <span
+          className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${
+            value === 'IN'
+              ? 'bg-green-100 text-green-800 border border-green-200'
+              : 'bg-red-100 text-red-800 border border-red-200'
+          }`}
+        >
+          {value}
+        </span>
+      );
+    }
+
+    // Array Handling (e.g. Tags)
+    if (Array.isArray(value)) {
+      if (value.length === 0) return <span className="text-gray-400 text-xs">-</span>;
+      return (
+        <div className="flex flex-wrap gap-1 max-w-xs">
+          {value.map((tag, idx) => (
+            <span
+              key={idx}
+              className="inline-block rounded bg-blue-50 px-2 py-0.5 text-[11px] font-medium text-blue-600 border border-blue-100"
+            >
+              #{tag}
+            </span>
+          ))}
+        </div>
+      );
+    }
+
+    // Date Handling (ISO Strings)
+    if (typeof value === 'string' && (key.includes('at') || key.includes('date'))) {
+      const parsedDate = Date.parse(value);
+      if (!isNaN(parsedDate) && value.length >= 10) {
+        return (
+          <span className="text-xs text-gray-500 whitespace-nowrap">
+            {new Date(value).toLocaleString('en-IN', {
+              day: '2-digit',
+              month: 'short',
+              year: 'numeric',
+              hour: '2-digit',
+              minute: '2-digit',
+              hour12: true,
+            })}
+          </span>
+        );
+      }
+    }
+
+    // Price Formatting
+    if (key.includes('price') && !isNaN(value)) {
+      return <span className="font-medium text-gray-900">₹{parseFloat(value).toFixed(2)}</span>;
+    }
+
+    // Quantity / Generic Numbers or Strings
+    return <span className="font-medium text-gray-800">{value.toString()}</span>;
   };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6">
-      {/* Backdrop (Dark Overlay & Blur) */}
+      {/* Backdrop */}
       <div
         className="fixed inset-0 bg-black/50 backdrop-blur-sm transition-opacity"
         onClick={onClose}
       />
 
       {/* Popup Container */}
-      <div className="relative z-10 w-full max-w-5xl rounded-2xl bg-white p-6 shadow-2xl transition-all max-h-[90vh] flex flex-col">
+      <div className="relative z-10 w-full max-w-6xl rounded-2xl bg-white p-6 shadow-2xl transition-all max-h-[90vh] flex flex-col">
         
         {/* Modal Header */}
         <div className="flex items-center justify-between border-b border-gray-100 pb-4 mb-4">
           <div>
-            <h2 className="text-xl font-bold text-gray-800">Inventory Logs</h2>
+            <h2 className="text-xl font-bold text-gray-800">Dynamic Inventory Logs</h2>
             <p className="text-xs text-gray-500 mt-0.5">
-              Total items: {data.length}
+              Total items: {data.length} | Columns detected: {columns.length}
             </p>
           </div>
 
-          {/* Close Button (X) */}
+          {/* Close Button */}
           <button
             onClick={onClose}
             className="rounded-lg p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-700 transition-colors"
@@ -64,7 +135,7 @@ export default function InventoryModal({ isOpen, onClose, data = [] }) {
           </button>
         </div>
 
-        {/* Modal Body: Table Direct Inside Modal */}
+        {/* Modal Body: Fully Dynamic Table */}
         <div className="flex-1 overflow-y-auto pr-1">
           {!data || data.length === 0 ? (
             <div className="flex items-center justify-center p-8 text-gray-500 bg-gray-50 rounded-lg border border-dashed border-gray-300">
@@ -74,67 +145,31 @@ export default function InventoryModal({ isOpen, onClose, data = [] }) {
             <div className="w-full overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-sm text-gray-600">
+                  
+                  {/* Dynamic Table Header */}
                   <thead className="bg-gray-50 text-xs uppercase tracking-wider text-gray-700 border-b border-gray-200">
                     <tr>
-                      <th className="px-6 py-4 font-semibold">Item Name</th>
-                      <th className="px-6 py-4 font-semibold">Category</th>
-                      <th className="px-6 py-4 font-semibold">Type</th>
-                      <th className="px-6 py-4 font-semibold">Quantity</th>
-                      <th className="px-6 py-4 font-semibold">Price (₹)</th>
-                      {/* <th className="px-6 py-4 font-semibold">Tags</th> */}
-                      <th className="px-6 py-4 font-semibold">Added On</th>
+                      {columns.map((colKey) => (
+                        <th key={colKey} className="px-6 py-4 font-semibold whitespace-nowrap">
+                          {formatHeader(colKey)}
+                        </th>
+                      ))}
                     </tr>
                   </thead>
+
+                  {/* Dynamic Table Body */}
                   <tbody className="divide-y divide-gray-100">
-                    {data.map((item) => (
-                      <tr key={item.id} className="hover:bg-gray-50/80 transition-colors">
-                        <td className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap">
-                          {item.name}
-                        </td>
-                        <td className="px-6 py-4 capitalize whitespace-nowrap">
-                          <span className="inline-flex items-center rounded-md bg-gray-100 px-2.5 py-1 text-xs font-medium text-gray-600">
-                            {item.category || 'General'}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <span
-                            className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${
-                              item.type === 'IN'
-                                ? 'bg-green-100 text-green-800 border border-green-200'
-                                : 'bg-red-100 text-red-800 border border-red-200'
-                            }`}
-                          >
-                            {item.type}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4 font-semibold text-gray-800 whitespace-nowrap">
-                          {parseFloat(item.quantity)} {item.unit}
-                        </td>
-                        <td className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap">
-                          {item.selling_price ? `₹${parseFloat(item.selling_price).toFixed(2)}` : '-'}
-                        </td>
-                        {/* <td className="px-6 py-4 max-w-xs">
-                          <div className="flex flex-wrap gap-1">
-                            {Array.isArray(item.tags) && item.tags.length > 0 ? (
-                              item.tags.map((tag, idx) => (
-                                <span
-                                  key={idx}
-                                  className="inline-block rounded bg-blue-50 px-2 py-0.5 text-[11px] font-medium text-blue-600 border border-blue-100"
-                                >
-                                  #{tag}
-                                </span>
-                              ))
-                            ) : (
-                              <span className="text-gray-400 text-xs">-</span>
-                            )}
-                          </div>
-                        </td> */}
-                        <td className="px-6 py-4 text-xs text-gray-500 whitespace-nowrap">
-                          {formatDate(item.created_at)}
-                        </td>
+                    {data.map((row, rowIndex) => (
+                      <tr key={row.id || rowIndex} className="hover:bg-gray-50/80 transition-colors">
+                        {columns.map((colKey) => (
+                          <td key={colKey} className="px-6 py-4 whitespace-nowrap">
+                            {renderCellValue(colKey, row[colKey])}
+                          </td>
+                        ))}
                       </tr>
                     ))}
                   </tbody>
+
                 </table>
               </div>
             </div>
