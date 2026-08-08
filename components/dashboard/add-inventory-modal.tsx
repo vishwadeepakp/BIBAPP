@@ -7,6 +7,7 @@ import { useSaveInventoryData } from '@/hooks/useAi'
 interface AddInventoryModalProps {
   open: boolean
   onClose: () => void
+  jsonObject?: any[]
 }
 
 declare global {
@@ -26,7 +27,17 @@ export function AddInventoryModal({
 
   const recognitionRef = useRef<any>(null)
 
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<{
+    name: string
+    quantity_per_package: string
+    quantity: string
+    category: string
+    status: string
+    description: string
+    unit: string
+    selling_price: string
+    tags: string[]
+  }>({
     name: '',
     quantity_per_package: '',
     quantity: '',
@@ -264,7 +275,10 @@ export function AddInventoryModal({
                   onChange={(e) =>
                     setFormData({
                       ...formData,
-                      tags: [...formData.tags, e.target.value],
+                      tags: e.target.value
+                        .split(',')
+                        .map((tag) => tag.trim())
+                        .filter(Boolean),
                     })
                   }
                   className="w-full rounded-lg border border-slate-300 dark:border-slate-700 px-4 py-3"
@@ -394,7 +408,7 @@ export function AddInventoryModal({
 
             <button
               onClick={() => {
-                if (modelCount < jsonObject.length) {
+                if (modelCount < (jsonObject?.length ?? 0)) {
                   setModelCount(modelCount + 1);
                 } else {
                   onClose();
@@ -409,7 +423,7 @@ export function AddInventoryModal({
               onClick={async () => {
                 await saveInventoryData.mutateAsync(formData);
 
-                if (modelCount < jsonObject.length) {
+                if (modelCount < (jsonObject?.length ?? 0)) {
                   setModelCount(modelCount + 1);
                 } else {
                   onClose();
