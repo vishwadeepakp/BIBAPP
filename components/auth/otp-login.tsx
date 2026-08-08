@@ -78,8 +78,8 @@ export function OTPLogin() {
     // await new Promise((resolve) => setTimeout(resolve, 500))
     await verifyOtp.mutate({ phone: mobileNumber, otp }, {
       onSuccess: (data) => {
-        login({ mobileNumber, token: data.token })
-        router.push('/dashboard')
+        login(mobileNumber, data.token)
+        router.replace('/dashboard')
         toast.success("OTP verified successfully");
       },
       onError: (error: any) => {

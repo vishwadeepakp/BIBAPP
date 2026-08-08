@@ -4,12 +4,13 @@ import React, { createContext, useContext, useEffect, useState } from 'react'
 
 interface User {
   mobileNumber: string
+  token?: string
   loginTime: string
 }
 
 interface AuthContextType {
   user: User | null
-  login: (mobileNumber: string) => void
+  login: (mobileNumber: string, token: string) => void
   logout: () => void
   isAuthenticated: boolean
 }
