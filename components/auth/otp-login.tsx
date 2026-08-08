@@ -81,7 +81,7 @@ export function OTPLogin() {
         login(mobileNumber, data.token)
         setTimeout(() => {
           router.replace('/dashboard')
-        }, 1000)
+        })
         toast.success("OTP verified successfully");
       },
       onError: (error: any) => {
