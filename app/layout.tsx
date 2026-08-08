@@ -7,6 +7,7 @@ import { AuthProvider } from '@/components/contexts/auth-context'
 import { ServiceWorkerRegister } from '@/components/service-worker-register'
 import ApiProvider from '@/components/ApiProvider'
 import { Toaster } from "react-hot-toast";
+import { PwaInstallButton } from '@/components/pwa-install-button'
 
 export const metadata: Metadata = {
   title: 'VyaparAI MSME Inventory Manager',
@@ -77,6 +78,7 @@ export default function RootLayout({
             <ThemeProvider>
               <ApiProvider>
                 {children}
+                <PwaInstallButton />
               </ApiProvider>
               {process.env.NODE_ENV === 'production' && <Analytics />}
             </ThemeProvider>
