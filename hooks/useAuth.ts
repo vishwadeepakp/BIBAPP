@@ -44,3 +44,24 @@ export const useVerifyOtp = () => {
     },
   });
 };
+
+export const useLogout = () => {
+  return useMutation({
+    mutationFn: async () => {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_GATWAY}/users/logout`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || errorData.error || "Failed to logout");
+      }
+
+      return response.json();
+    },
+  });
+};

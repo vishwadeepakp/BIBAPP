@@ -7,6 +7,7 @@ import { X, BarChart3, Package, Receipt, LogOut } from 'lucide-react'
 import { useLanguage } from '@/components/contexts/language-context'
 import { useAuth } from '@/components/contexts/auth-context'
 import Image from 'next/image';
+import { useLogout as useAuthentication } from '@/hooks/useAuth'
 
 interface SidebarProps {
   isOpen: boolean
@@ -18,10 +19,19 @@ export function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
   const { t } = useLanguage()
   const { logout } = useAuth()
   const router = useRouter()
+  const { mutate: logoutMutate } = useAuthentication();
 
   const handleLogout = () => {
-    logout()
-    router.push('/')
+    logoutMutate(undefined, {
+      onSuccess: () => {
+        logout()
+        router.push('/')
+      },
+      onError: (error: any) => {
+        console.error("Logout failed:", error);
+        // Optionally, you can show a toast notification or alert to the user
+      },
+    });
   }
 
   const navItems = [
@@ -92,8 +102,8 @@ export function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
                 href={item.href}
                 onClick={() => setIsOpen(false)}
                 className={`flex items-center gap-3 rounded-lg px-4 py-3 transition-colors ${item.isActive
-                    ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-600'
-                    : 'hover:bg-gray-100 dark:hover:bg-slate-800'
+                  ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-600'
+                  : 'hover:bg-gray-100 dark:hover:bg-slate-800'
                   }`}
               >
                 <Icon className="w-5 h-5" />
