@@ -9,14 +9,7 @@ function hasAuthCookie(request: NextRequest) {
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
-//   const isAuthenticated = hasAuthCookie(request)
-
-  console.log('--- MIDDLEWARE RUNNING ---')
-  console.log('Path:', pathname)
-  console.log('All Cookies Received:', request.cookies.getAll())
-
   const isAuthenticated = hasAuthCookie(request)
-  console.log('Is Authenticated?:', isAuthenticated)
 
   if (pathname === '/') {
     if (isAuthenticated) {
@@ -26,13 +19,13 @@ export function middleware(request: NextRequest) {
     return NextResponse.next()
   }
 
-  if (pathname.startsWith('/dashboard')) {
-    if (!isAuthenticated) {
-      return NextResponse.redirect(new URL('/', request.url))
-    }
+  // if (pathname.startsWith('/dashboard')) {
+  //   if (!isAuthenticated) {
+  //     return NextResponse.redirect(new URL('/', request.url))
+  //   }
 
-    return NextResponse.next()
-  }
+  //   return NextResponse.next()
+  // }
 
   return NextResponse.next()
 }
