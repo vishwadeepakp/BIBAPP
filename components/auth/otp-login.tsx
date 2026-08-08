@@ -43,9 +43,7 @@ export function OTPLogin() {
     }
 
     await sendOtp.mutate({ phone: mobileNumber }, {
-      onError: (error: any) => {
-        toast.error(error.message || "Something went wrong");
-
+      onSuccess: (data) => {
         setStep(2)
         setResendTimer(60)
 
@@ -59,23 +57,13 @@ export function OTPLogin() {
             return prev - 1
           })
         }, 1000)
+        toast.success("OTP sent successfully");
+      },
+      onError: (error: any) => {
+        toast.error(error.message || "Something went wrong");
       }
     });
-    if (sendOtp.isSuccess) {
-      setStep(2)
-      setResendTimer(60)
 
-      // Timer countdown
-      const interval = setInterval(() => {
-        setResendTimer((prev) => {
-          if (prev <= 1) {
-            clearInterval(interval)
-            return 0
-          }
-          return prev - 1
-        })
-      }, 1000)
-    }
   }
 
   const handleVerifyOtp = async () => {
@@ -92,6 +80,7 @@ export function OTPLogin() {
       onSuccess: (data) => {
         login({ mobileNumber, token: data.token })
         router.push('/dashboard')
+        toast.success("OTP verified successfully");
       },
       onError: (error: any) => {
         toast.error(error.message || error.error || "Something went wrong");
