@@ -57,15 +57,19 @@ export function PwaInstallButton() {
 
   const handleInstallClick = async () => {
     if (deferredPrompt) {
-      deferredPrompt.prompt()
-      const choice = await deferredPrompt.userChoice
+      try {
+        await deferredPrompt.prompt()
+        const choice = await deferredPrompt.userChoice
 
-      if (choice.outcome === 'accepted') {
-        setIsVisible(false)
-        setIsInstalled(true)
+        if (choice.outcome === 'accepted') {
+          setIsVisible(false)
+          setIsInstalled(true)
+        }
+      } catch (error) {
+        console.error('PWA install prompt failed:', error)
+      } finally {
+        setDeferredPrompt(null)
       }
-
-      setDeferredPrompt(null)
       return
     }
 
