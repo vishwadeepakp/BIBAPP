@@ -243,7 +243,7 @@ export function InventoryTable() {
                         {item.category ?? item.Category ?? 'Uncategorized'}
                       </td>
                       <td className="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">
-                        {item.quantity_per_package ?? '—'}
+                        {item.quantityPerPackage ?? '—'}
                       </td>
                       <td className="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">
                         {item.unit ?? '—'}

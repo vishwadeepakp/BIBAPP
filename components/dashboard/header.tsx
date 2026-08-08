@@ -91,7 +91,7 @@ export function Header() {
 
         <button
           onClick={toggleListening}
-          className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 to-violet-600 px-4 py-2.5 text-white shadow-lg hover:scale-105 transition"
+          className="cursor-pointer flex items-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 to-violet-600 px-4 py-2.5 text-white shadow-lg hover:scale-105 transition"
         >
           <Bot className="h-5 w-5" />
           <span className="hidden sm:block font-medium">
@@ -103,7 +103,7 @@ export function Header() {
 
         <button
           onClick={toggleTheme}
-          className="p-2 rounded-lg bg-gray-200 dark:bg-slate-700 hover:bg-gray-300 dark:hover:bg-slate-600"
+          className="cursor-pointer p-2 rounded-lg bg-gray-200 dark:bg-slate-700 hover:bg-gray-300 dark:hover:bg-slate-600"
         >
           {theme === "light" ? (
             <Moon className="h-5 w-5" />
@@ -117,7 +117,7 @@ export function Header() {
         <div className="relative">
           <button
             onClick={() => setLanguageStatus((prev) => !prev)}
-            className="rounded-full border border-gray-300 bg-white dark:bg-slate-700 px-3 py-2 font-medium shadow"
+            className="cursor-pointer rounded-full border border-gray-300 bg-white dark:bg-slate-700 px-3 py-2 font-medium shadow"
           >
             {language.toUpperCase()}
           </button>

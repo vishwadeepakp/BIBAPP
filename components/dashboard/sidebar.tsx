@@ -63,9 +63,9 @@ export function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
       >
         {/* Logo */}
         <div className="flex items-center border-b border-gray-200 dark:border-slate-700 justify-between p-4">
-            <div className="w-40 h-20  rounded-lg flex items-center justify-center">
-               <Image width={40} height={40} src="/icons/icon-removebg-preview.png" alt="VyaparAI Logo" className="w-40 h-20 text-primary-foreground" />
-            </div>
+          <div onClick={() => router.push('/dashboard')} className="cursor-pointer w-40 h-20  rounded-lg flex items-center justify-center">
+            <Image width={40} height={40} src="/icons/icon-removebg-preview.png" alt="VyaparAI Logo" className="w-40 h-20 text-primary-foreground" />
+          </div>
           {/* <div>
             <h2 className="text-xl font-bold text-blue-600">VyaparAI</h2>
             <p className="text-xs text-slate-500">
@@ -82,7 +82,7 @@ export function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 p-4 space-y-2">
+        <nav className="cursor-pointer flex-1 p-4 space-y-2">
           {navItems.map((item) => {
             const Icon = item.icon
 
@@ -91,11 +91,10 @@ export function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
                 key={item.href}
                 href={item.href}
                 onClick={() => setIsOpen(false)}
-                className={`flex items-center gap-3 rounded-lg px-4 py-3 transition-colors ${
-                  item.isActive
+                className={`flex items-center gap-3 rounded-lg px-4 py-3 transition-colors ${item.isActive
                     ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-600'
                     : 'hover:bg-gray-100 dark:hover:bg-slate-800'
-                }`}
+                  }`}
               >
                 <Icon className="w-5 h-5" />
                 {item.label}
