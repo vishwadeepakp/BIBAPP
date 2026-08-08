@@ -79,7 +79,9 @@ export function OTPLogin() {
     await verifyOtp.mutate({ phone: mobileNumber, otp }, {
       onSuccess: (data) => {
         login(mobileNumber, data.token)
-        router.replace('/dashboard')
+        setTimeout(() => {
+          router.replace('/dashboard')
+        }, 300)
         toast.success("OTP verified successfully");
       },
       onError: (error: any) => {
