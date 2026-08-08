@@ -80,8 +80,9 @@ export function OTPLogin() {
       onSuccess: (data) => {
         login(mobileNumber, data.token)
         setTimeout(() => {
-          router.replace('/dashboard')
-        })
+          // router.replace('/dashboard')
+          window.location.href = '/dashboard'
+        }, 1000)
         toast.success("OTP verified successfully");
       },
       onError: (error: any) => {
