@@ -43,7 +43,7 @@
       "url": "/dashboard?shortcut=analytics",
       "icons": [
         {
-          "src": "/icon-96.png",
+          "src": "/icon-192.png",
           "sizes": "96x96",
           "type": "image/png"
         }
@@ -56,7 +56,7 @@
       "url": "/dashboard/inventory?shortcut=inventory",
       "icons": [
         {
-          "src": "/icon-96.png",
+          "src": "/icon-192.png",
           "sizes": "96x96",
           "type": "image/png"
         }
@@ -69,7 +69,7 @@
       "url": "/dashboard/sales?shortcut=sales",
       "icons": [
         {
-          "src": "/icon-96.png",
+          "src": "/icon-192.png",
           "sizes": "96x96",
           "type": "image/png"
         }
