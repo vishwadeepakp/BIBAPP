@@ -1,8 +1,28 @@
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 import api from "@/api/axiosInstance"; // <--- आपका Axios instance import हो गया
 
-// Send Text
+const INVENTORY_TABLE_QUERY_KEY = ['inventory', 'table'] as const;
+
+export const useInventoryTable = ({ page, limit, search }: { page: number; limit: number; search: string }) => {
+    return useQuery({
+        queryKey: [...INVENTORY_TABLE_QUERY_KEY, page, limit, search],
+        queryFn: async () => {
+            const response = await api.get("/ai/inventory/table", {
+                params: {
+                    page,
+                    limit,
+                    search,
+                    q: search,
+                },
+            });
+
+            return response.data;
+        },
+        staleTime: 30_000,
+    });
+};
+
 export const useSendText = () => {
     return useMutation({
         mutationFn: async (payload: { query: string; language: string }) => {
@@ -57,6 +77,8 @@ export const useSendText = () => {
 };
 
 export const useSaveInventoryData = () => {
+    const queryClient = useQueryClient();
+
     return useMutation({
         mutationFn: async (payload: any) => {
             toast.loading("Saving...", {
@@ -81,8 +103,15 @@ export const useSaveInventoryData = () => {
                 throw new Error(errorMessage);
             }
         },
+        onSuccess: async () => {
+            await queryClient.invalidateQueries({
+                queryKey: INVENTORY_TABLE_QUERY_KEY,
+                refetchType: 'active',
+            });
+        },
     });
 };
+
 
 function speakText(text: string) {
     // Check अगर ब्राउज़र Speech Synthesis सपोर्ट करता है

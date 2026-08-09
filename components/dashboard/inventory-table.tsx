@@ -1,11 +1,11 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useLanguage } from '@/components/contexts/language-context'
 import { Search, Plus } from 'lucide-react'
 import { AddInventoryModal } from './add-inventory-modal'
 import { useSearchParams, useRouter, usePathname } from 'next/navigation'
-import api from '@/api/axiosInstance'
+import { useInventoryTable } from '@/hooks/useAi'
 
 interface InventoryItem {
   id: string
@@ -41,79 +41,52 @@ export function InventoryTable() {
   const [searchTerm, setSearchTerm] = useState('')
   const [currentPage, setCurrentPage] = useState(1)
   const [openModal, setOpenModal] = useState(false)
-  const [inventoryItems, setInventoryItems] = useState<InventoryItem[]>([])
-  const [totalPages, setTotalPages] = useState(1)
-  const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
 
   const itemsPerPage = 5
+
+  const { data, isLoading, error: queryError } = useInventoryTable({
+    page: currentPage,
+    limit: itemsPerPage,
+    search: searchTerm.trim(),
+  })
+
+  const inventoryItems = useMemo(() => {
+    const payload = data as InventoryApiResponse | InventoryItem[] | undefined
+
+    if (!payload) return []
+    if (Array.isArray(payload)) return payload
+
+    if (Array.isArray((payload as InventoryApiResponse)?.items)) {
+      return (payload as InventoryApiResponse).items!
+    }
+
+    if (Array.isArray((payload as InventoryApiResponse)?.data)) {
+      return ((payload as InventoryApiResponse).data as InventoryItem[])
+    }
+
+    return ((payload as InventoryApiResponse)?.data as { items?: InventoryItem[] } | undefined)?.items || []
+  }, [data])
+
+  const totalPages = useMemo(() => {
+    const payload = data as InventoryApiResponse | InventoryItem[] | undefined
+
+    if (!payload || Array.isArray(payload)) {
+      return 1
+    }
+
+    const payloadObject = payload as InventoryApiResponse
+    return payloadObject.totalPages
+      ?? (payloadObject.data && typeof payloadObject.data === 'object' && !Array.isArray(payloadObject.data) ? payloadObject.data.totalPages : undefined)
+      ?? Math.max(1, Math.ceil((payloadObject.totalItems ?? payloadObject.total ?? inventoryItems.length) / itemsPerPage))
+  }, [data, inventoryItems.length])
+
+  const error = queryError ? 'Unable to load inventory from the backend right now.' : null
 
   useEffect(() => {
     if (items && items.length > 0) {
       setOpenModal(true)
     }
   }, [items])
-
-  useEffect(() => {
-    const controller = new AbortController()
-    const timeoutId = window.setTimeout(async () => {
-      setIsLoading(true)
-      setError(null)
-
-      try {
-        const endpointCandidates = ['/ai/inventory/table']
-        let lastError: unknown = null
-
-        for (const endpoint of endpointCandidates) {
-          try {
-            const response = await api.get(endpoint, {
-              params: {
-                page: currentPage,
-                limit: itemsPerPage,
-                search: searchTerm.trim(),
-                q: searchTerm.trim(),
-              },
-              signal: controller.signal,
-            })
-
-            const payload = response.data as InventoryApiResponse | InventoryItem[]
-            const normalizedItems = Array.isArray(payload)
-              ? payload
-              : (Array.isArray((payload as InventoryApiResponse)?.items)
-                ? (payload as InventoryApiResponse).items!
-                : Array.isArray((payload as InventoryApiResponse)?.data)
-                  ? ((payload as InventoryApiResponse).data as InventoryItem[])
-                  : ((payload as InventoryApiResponse)?.data as { items?: InventoryItem[] } | undefined)?.items || [])
-
-            const payloadObject = Array.isArray(payload) ? undefined : (payload as InventoryApiResponse)
-            const resolvedTotalPages = payloadObject?.totalPages
-              ?? (payloadObject?.data && typeof payloadObject.data === 'object' && !Array.isArray(payloadObject.data) ? payloadObject.data.totalPages : undefined)
-              ?? Math.max(1, Math.ceil((payloadObject?.totalItems ?? payloadObject?.total ?? normalizedItems.length) / itemsPerPage))
-
-            setInventoryItems(normalizedItems as InventoryItem[])
-            setTotalPages(resolvedTotalPages)
-            return
-          } catch (requestError) {
-            lastError = requestError
-          }
-        }
-
-        throw lastError
-      } catch (fetchError) {
-        console.error('Inventory fetch failed:', fetchError)
-        setError('Unable to load inventory from the backend right now.')
-        setInventoryItems([])
-        setTotalPages(1)
-      } finally {
-        setIsLoading(false)
-      }
-    }, 400)
-
-    return () => {
-      window.clearTimeout(timeoutId)
-      controller.abort()
-    }
-  }, [currentPage, searchTerm, itemsPerPage])
 
   const getStatusValue = (item: InventoryItem) => {
     if (item.status) return item.status
