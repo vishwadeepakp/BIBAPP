@@ -74,7 +74,8 @@ export function InventoryTable() {
     }
 
 
-    const payloadObject = payload.pagination as InventoryApiResponse
+    const payloadObject = (payload as { pagination?: InventoryApiResponse }).pagination
+      ?? (payload as InventoryApiResponse)
 
     const nestedData = payloadObject.data && typeof payloadObject.data === 'object' && !Array.isArray(payloadObject.data)
       ? payloadObject.data as { totalPages?: number; totalItems?: number; total?: number; items?: InventoryItem[] }
@@ -167,13 +168,37 @@ export function InventoryTable() {
           </p>
         </div>
 
-        <button
-          onClick={() => setOpenModal(true)}
-          className="flex items-center gap-2 rounded-lg bg-blue-600 px-5 py-3 text-white hover:bg-blue-700 transition"
-        >
-          <Plus className="w-5 h-5" />
-          Add Inventory
-        </button>
+        <div className="flex flex-wrap items-center gap-3">
+          <button
+            onClick={() => setOpenModal(true)}
+            className="flex items-center gap-2 rounded-lg bg-blue-600 px-5 py-3 text-white hover:bg-blue-700 transition"
+          >
+            <Plus className="w-5 h-5" />
+            Add Inventory
+          </button>
+
+          <button
+            type="button"
+            disabled
+            className="flex items-center gap-2 rounded-lg border border-gray-300 dark:border-slate-600 bg-gray-100 dark:bg-slate-700 px-5 py-3 text-sm text-slate-600 dark:text-slate-300 opacity-70 cursor-not-allowed"
+            title="Coming soon"
+          >
+            <span>📷</span>
+            Barcode Scan
+            <span className="text-xs font-medium text-amber-600 dark:text-amber-400">Coming soon</span>
+          </button>
+
+          <button
+            type="button"
+            disabled
+            className="flex items-center gap-2 rounded-lg border border-gray-300 dark:border-slate-600 bg-gray-100 dark:bg-slate-700 px-5 py-3 text-sm text-slate-600 dark:text-slate-300 opacity-70 cursor-not-allowed"
+            title="Coming soon"
+          >
+            <span>🧾</span>
+            AI Bill Scan (OCR)
+            <span className="text-xs font-medium text-amber-600 dark:text-amber-400">Coming soon</span>
+          </button>
+        </div>
 
         <div className="relative">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-slate-400" />

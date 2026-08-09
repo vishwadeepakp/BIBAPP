@@ -53,6 +53,13 @@ export function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
       icon: Receipt,
       isActive: pathname === '/dashboard/sales',
     },
+    {
+      href: '#',
+      label: 'Stock',
+      icon: Package,
+      isActive: false,
+      disabled: true,
+    },
   ]
 
   return (
@@ -95,6 +102,21 @@ export function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
         <nav className="cursor-pointer flex-1 p-4 space-y-2">
           {navItems.map((item) => {
             const Icon = item.icon
+
+            if (item.disabled) {
+              return (
+                <div
+                  key={item.href}
+                  className="flex cursor-not-allowed items-center gap-3 rounded-lg px-4 py-3 text-slate-400 dark:text-slate-500"
+                >
+                  <Icon className="w-5 h-5" />
+                  <span className="flex items-center gap-2">
+                    {item.label}
+                    <span className="text-xs font-medium text-amber-600 dark:text-amber-400">Coming soon</span>
+                  </span>
+                </div>
+              )
+            }
 
             return (
               <Link
