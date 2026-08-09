@@ -19,7 +19,8 @@ export const useInventoryTable = ({ page, limit, search }: { page: number; limit
 
             return response.data;
         },
-        staleTime: 30_000,
+        staleTime: 0,
+        refetchOnWindowFocus: false,
     });
 };
 

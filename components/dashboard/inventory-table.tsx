@@ -44,7 +44,7 @@ export function InventoryTable() {
 
   const itemsPerPage = 5
 
-  const { data, isLoading, error: queryError } = useInventoryTable({
+  const { data, isLoading, error: queryError, refetch } = useInventoryTable({
     page: currentPage,
     limit: itemsPerPage,
     search: searchTerm.trim(),
@@ -69,16 +69,37 @@ export function InventoryTable() {
 
   const totalPages = useMemo(() => {
     const payload = data as InventoryApiResponse | InventoryItem[] | undefined
-
-    if (!payload || Array.isArray(payload)) {
+    if (!payload) {
       return 1
     }
 
-    const payloadObject = payload as InventoryApiResponse
-    return payloadObject.totalPages
-      ?? (payloadObject.data && typeof payloadObject.data === 'object' && !Array.isArray(payloadObject.data) ? payloadObject.data.totalPages : undefined)
-      ?? Math.max(1, Math.ceil((payloadObject.totalItems ?? payloadObject.total ?? inventoryItems.length) / itemsPerPage))
-  }, [data, inventoryItems.length])
+
+    const payloadObject = payload.pagination as InventoryApiResponse
+
+    const nestedData = payloadObject.data && typeof payloadObject.data === 'object' && !Array.isArray(payloadObject.data)
+      ? payloadObject.data as { totalPages?: number; totalItems?: number; total?: number; items?: InventoryItem[] }
+      : undefined
+
+    const totalItems = payloadObject.totalItems
+      ?? payloadObject.total
+      ?? nestedData?.totalItems
+      ?? nestedData?.total
+      ?? undefined
+
+    if (typeof payloadObject.totalPages === 'number' && payloadObject.totalPages > 0) {
+      return payloadObject.totalPages
+    }
+
+    if (typeof nestedData?.totalPages === 'number' && nestedData.totalPages > 0) {
+      return nestedData.totalPages
+    }
+
+    if (typeof totalItems === 'number' && totalItems > 0) {
+      return Math.max(1, Math.ceil(totalItems / itemsPerPage))
+    }
+
+    return 1
+  }, [data, itemsPerPage])
 
   const error = queryError ? 'Unable to load inventory from the backend right now.' : null
 
@@ -87,6 +108,10 @@ export function InventoryTable() {
       setOpenModal(true)
     }
   }, [items])
+
+  useEffect(() => {
+    void refetch()
+  }, [currentPage, searchTerm, itemsPerPage, refetch])
 
   const getStatusValue = (item: InventoryItem) => {
     if (item.status) return item.status
@@ -187,7 +212,7 @@ export function InventoryTable() {
                   <th className="px-6 py-4 text-center text-sm font-semibold text-slate-900 dark:text-white">
                     {t('inventory.expiry')}
                   </th>
-                  <th className="px-6 py-4 text-left text-sm font-semibold text-slate-900 dark:text-white">
+                  <th className="px-6 _per_p_p_p text-left text-sm font-semibold text-slate-900 dark:text-white">
                     {t('inventory.status')}
                   </th>
                 </tr>
@@ -216,7 +241,7 @@ export function InventoryTable() {
                         {item.category ?? item.Category ?? 'Uncategorized'}
                       </td>
                       <td className="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">
-                        {item.quantityPerPackage ?? '—'}
+                        {item.quantity_per_package ?? '—'}
                       </td>
                       <td className="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">
                         {item.unit ?? '—'}
