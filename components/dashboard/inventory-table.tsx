@@ -102,7 +102,7 @@ export function InventoryTable() {
     return 1
   }, [data, itemsPerPage])
 
-  const error = queryError ? 'Unable to load inventory from the backend right now.' : null
+  const error = queryError ? t('inventory.loadError') : null
 
   useEffect(() => {
     if (items && items.length > 0) {
@@ -174,7 +174,7 @@ export function InventoryTable() {
             className="flex items-center gap-2 rounded-lg bg-blue-600 px-5 py-3 text-white hover:bg-blue-700 transition"
           >
             <Plus className="w-5 h-5" />
-            Add Inventory
+            {t('inventory.addInventory')}
           </button>
 
           <button
@@ -184,8 +184,8 @@ export function InventoryTable() {
             title="Coming soon"
           >
             <span>📷</span>
-            Barcode Scan
-            <span className="text-xs font-medium text-amber-600 dark:text-amber-400">Coming soon</span>
+            {t('inventory.barcodeScan')}
+            <span className="text-xs font-medium text-amber-600 dark:text-amber-400">{t('inventory.comingSoon')}</span>
           </button>
 
           <button
@@ -195,8 +195,8 @@ export function InventoryTable() {
             title="Coming soon"
           >
             <span>🧾</span>
-            AI Bill Scan (OCR)
-            <span className="text-xs font-medium text-amber-600 dark:text-amber-400">Coming soon</span>
+            {t('inventory.aiBillScan')}
+            <span className="text-xs font-medium text-amber-600 dark:text-amber-400">{t('inventory.comingSoon')}</span>
           </button>
         </div>
 
@@ -246,12 +246,12 @@ export function InventoryTable() {
                 {isLoading && (
                   <tr>
                     <td colSpan={7} className="px-6 py-10 text-center text-slate-500 dark:text-slate-400">
-                      Loading inventory...
+                      {t('inventory.loading')}
                     </td>
                   </tr>
                 )}
 
-                {!isLoading && !error && inventoryItems.map((item) => {
+                {!isLoading && !error && inventoryItems.map((item: any) => {
                   const status = getStatusValue(item)
 
                   return (
@@ -263,10 +263,10 @@ export function InventoryTable() {
                         {item.name}
                       </td>
                       <td className="px-6 py-4 text-sm text-slate-900 dark:text-white font-medium">
-                        {item.category ?? item.Category ?? 'Uncategorized'}
+                        {item.category ?? item.Category ?? t('inventory.uncategorized')}
                       </td>
                       <td className="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">
-                        {item.quantity_per_package ?? '—'}
+                        {item.quantityPerPackage ?? '—'}
                       </td>
                       <td className="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">
                         {item.unit ?? '—'}
@@ -275,7 +275,7 @@ export function InventoryTable() {
                         {item.quantity}
                       </td>
                       <td className="px-6 py-4 text-sm text-slate-900 dark:text-white text-center font-semibold">
-                        {item.expiry ? new Date(item.expiry).toLocaleDateString() : 'N/A'}
+                        {item.expiry ? new Date(item.expiry).toLocaleDateString() : t('inventory.notAvailable')}
                       </td>
                       <td className="px-6 py-4 text-sm">
                         <span
@@ -293,7 +293,7 @@ export function InventoryTable() {
 
           {!isLoading && !error && inventoryItems.length === 0 && (
             <div className="p-8 text-center">
-              <p className="text-slate-500 dark:text-slate-400">No products found</p>
+              <p className="text-slate-500 dark:text-slate-400">{t('inventory.noProducts')}</p>
             </div>
           )}
 
@@ -311,7 +311,7 @@ export function InventoryTable() {
               disabled={currentPage === 1}
               className="px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-slate-700"
             >
-              Previous
+              {t('inventory.previous')}
             </button>
             {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
               <button
@@ -330,7 +330,7 @@ export function InventoryTable() {
               disabled={currentPage === totalPages}
               className="px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-slate-700"
             >
-              Next
+              {t('inventory.next')}
             </button>
           </div>
         )}

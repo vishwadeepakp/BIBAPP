@@ -55,7 +55,7 @@ export function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
     },
     {
       href: '#',
-      label: 'Stock',
+      label: t('inventory.stock'),
       icon: Package,
       isActive: false,
       disabled: true,
@@ -112,7 +112,7 @@ export function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
                   <Icon className="w-5 h-5" />
                   <span className="flex items-center gap-2">
                     {item.label}
-                    <span className="text-xs font-medium text-amber-600 dark:text-amber-400">Coming soon</span>
+                    <span className="text-xs font-medium text-amber-600 dark:text-amber-400">{t('inventory.comingSoon')}</span>
                   </span>
                 </div>
               )
