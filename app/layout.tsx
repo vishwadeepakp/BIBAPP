@@ -8,6 +8,7 @@ import { ServiceWorkerRegister } from '@/components/service-worker-register'
 import ApiProvider from '@/components/ApiProvider'
 import { Toaster } from "react-hot-toast";
 import { PwaInstallButton } from '@/components/pwa-install-button'
+import Warmup from '@/components/Warmup';
 
 export const metadata: Metadata = {
   title: 'VyaparAI MSME Inventory Manager',
@@ -77,6 +78,7 @@ export default function RootLayout({
           <LanguageProvider>
             <ThemeProvider>
               <ApiProvider>
+                <Warmup />
                 {children}
                 <PwaInstallButton />
               </ApiProvider>
