@@ -31,11 +31,15 @@ api.interceptors.response.use(
         // जैसे ही Refresh API सफल होगी, ब्राउज़र में नया accessToken Cookie सेट हो जाएगा।
         // अब original request को दोबारा रन कर दें:
         return api(originalRequest);
-      } catch (refreshError) {
+      } catch (refreshError: any) {
         // अगर Refresh Token भी Expire या Invalid हो चुका है:
         // यहाँ यूजर को Login पेज पर भेज दें
         if (typeof window !== 'undefined') {
         //   window.location.href = '/';
+        }
+        if (refreshError.response?.status === 500) {
+          localStorage.removeItem('user');
+          window.location.href = '/';
         }
         return Promise.reject(refreshError);
       }

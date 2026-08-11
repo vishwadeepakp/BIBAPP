@@ -36,7 +36,10 @@ export function AddInventoryModal({
     description: string
     unit: string
     selling_price: string
+    buying_price: string
     tags: string[]
+    supplier_name: string
+    expiry_date: string
   }>({
     name: '',
     quantity_per_package: '',
@@ -46,7 +49,10 @@ export function AddInventoryModal({
     description: '',
     unit: '',
     selling_price: '',
-    tags: []
+    buying_price: '',
+    tags: [],
+    supplier_name: '',
+    expiry_date: '',
   })
 
   const saveInventoryData = useSaveInventoryData()
@@ -65,7 +71,10 @@ export function AddInventoryModal({
           status: data.status || 'in-stock',
           description: data.description || '',
           selling_price: data.selling_price || '',
+          buying_price: data.buying_price || '',
           tags: data.tags || [],
+          expiry_date: data.expiry_date || '',
+          supplier_name: data.supplier_name || '',
         })
       }
     }
@@ -248,7 +257,7 @@ export function AddInventoryModal({
               </div>
               <div>
                 <label className="mb-2 block text-sm font-medium">
-                  Price
+                  Selling Price
                 </label>
                 <input
                   type="number"
@@ -259,6 +268,38 @@ export function AddInventoryModal({
                       ...formData,
                       selling_price: e.target.value,
                     })
+                  }
+                  className="w-full rounded-lg border border-slate-300 dark:border-slate-700 px-4 py-3"
+                />
+
+              </div>
+              <div>
+                <label className="mb-2 block text-sm font-medium">
+                  Buying Price
+                </label>
+                <input
+                  type="number"
+                  placeholder="0"
+                  value={formData.buying_price}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      buying_price: e.target.value,
+                    })
+                  }
+                  className="w-full rounded-lg border border-slate-300 dark:border-slate-700 px-4 py-3"
+                />
+
+              </div>
+              <div>
+                <label className="mb-2 block text-sm font-medium">
+                  Total Price
+                </label>
+                <input
+                  type="number"
+                  placeholder="0"
+                  value={formData.TotalPrice}
+                  onChange={(e) => { }
                   }
                   className="w-full rounded-lg border border-slate-300 dark:border-slate-700 px-4 py-3"
                 />
@@ -279,6 +320,24 @@ export function AddInventoryModal({
                         .split(',')
                         .map((tag) => tag.trim())
                         .filter(Boolean),
+                    })
+                  }
+                  className="w-full rounded-lg border border-slate-300 dark:border-slate-700 px-4 py-3"
+                />
+
+              </div>
+              <div>
+                <label className="mb-2 block text-sm font-medium">
+                  Supplier
+                </label>
+                <input
+                  type="text"
+                  placeholder="supplier"
+                  value={formData.supplier_name}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      supplier_name: e.target.value,
                     })
                   }
                   className="w-full rounded-lg border border-slate-300 dark:border-slate-700 px-4 py-3"
@@ -309,13 +368,39 @@ export function AddInventoryModal({
                 />
 
               </div>
-
               <div>
 
                 <label className="mb-2 block text-sm font-medium">
-                  Status
+                  Expiry Date
                 </label>
 
+                <input
+                  type="date"
+                  name="expiryDate"
+                  value={formData.expiry_date}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      expiry_date: e.target.value,
+                    })
+                  }
+                  style={{
+                    padding: '8px',
+                    borderRadius: '6px',
+                    border: '1px solid #ccc',
+                    fontSize: '16px',
+                    marginTop: '4px'
+                  }}
+                />
+
+              </div>
+
+              <div>
+
+                {/* <label className="mb-2 block text-sm font-medium">
+                  Status
+                </label> */}
+                {/* 
                 <select
                   value={formData.status}
                   onChange={(e) =>
@@ -329,7 +414,7 @@ export function AddInventoryModal({
                   <option value="in-stock">In Stock</option>
                   <option value="low-stock">Low Stock</option>
                   <option value="out-of-stock">Out Of Stock</option>
-                </select>
+                </select> */}
 
               </div>
 

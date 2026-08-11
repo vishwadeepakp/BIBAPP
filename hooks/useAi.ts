@@ -24,6 +24,26 @@ export const useInventoryTable = ({ page, limit, search }: { page: number; limit
     });
 };
 
+export const useStockTable = ({ page, limit, search }: { page: number; limit: number; search: string }) => {
+    return useQuery({
+        queryKey: ["useStockTable", page, limit, search],
+        queryFn: async () => {
+            const response = await api.get("/stock/table", {
+                params: {
+                    page,
+                    limit,
+                    search,
+                    q: search,
+                },
+            });
+
+            return response.data;
+        },
+        staleTime: 0,
+        refetchOnWindowFocus: false,
+    });
+};
+
 export const useSendText = () => {
     return useMutation({
         mutationFn: async (payload: { query: string; language: string }) => {

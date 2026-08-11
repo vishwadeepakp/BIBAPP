@@ -17,7 +17,7 @@ interface InventoryItem {
   category?: string
   Category?: string
   quantity_per_package?: string | number
-  expiry?: string | null
+  expiryDate?: string | null
 }
 
 interface InventoryApiResponse {
@@ -237,9 +237,15 @@ export function InventoryTable() {
                   <th className="px-6 py-4 text-center text-sm font-semibold text-slate-900 dark:text-white">
                     {t('inventory.expiry')}
                   </th>
-                  <th className="px-6 _per_p_p_p text-left text-sm font-semibold text-slate-900 dark:text-white">
-                    {t('inventory.status')}
+                   <th className="px-6 py-4 text-center text-sm font-semibold text-slate-900 dark:text-white">
+                    {t('inventory.sellPrice')}
                   </th>
+                   <th className="px-6 py-4 text-center text-sm font-semibold text-slate-900 dark:text-white">
+                    {t('inventory.buyingPrice')}
+                  </th>
+                  {/* <th className="px-6 _per_p_p_p text-left text-sm font-semibold text-slate-900 dark:text-white">
+                    {t('inventory.status')}
+                  </th> */}
                 </tr>
               </thead>
               <tbody>
@@ -275,15 +281,21 @@ export function InventoryTable() {
                         {item.quantity}
                       </td>
                       <td className="px-6 py-4 text-sm text-slate-900 dark:text-white text-center font-semibold">
-                        {item.expiry ? new Date(item.expiry).toLocaleDateString() : t('inventory.notAvailable')}
+                        {item.expiryDate ? new Date(item.expiryDate).toLocaleDateString() : t('inventory.notAvailable')}
                       </td>
-                      <td className="px-6 py-4 text-sm">
+                      <td className="px-6 py-4 text-sm text-slate-900 dark:text-white text-center font-semibold">
+                        {item.sellingPrice ? item.sellingPrice : t('inventory.notAvailable')}
+                      </td>
+                      <td className="px-6 py-4 text-sm text-slate-900 dark:text-white text-center font-semibold">
+                        {item.buyingPrice ? item.buyingPrice : t('inventory.notAvailable')}
+                      </td>
+                      {/* <td className="px-6 py-4 text-sm">
                         <span
                           className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${getStatusStyles(status)}`}
                         >
-                          {getStatusLabel(status)}
+                          // {getStatusLabel(status)}
                         </span>
-                      </td>
+                      </td> */}
                     </tr>
                   )
                 })}

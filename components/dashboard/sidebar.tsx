@@ -24,8 +24,8 @@ export function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
   const handleLogout = () => {
     logoutMutate(undefined, {
       onSuccess: () => {
-        logout()
-        router.push('/')
+        logout();
+        router.replace('/') // Use replace to avoid adding a new entry in the history stack
       },
       onError: (error: any) => {
         console.error("Logout failed:", error);
@@ -54,8 +54,21 @@ export function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
       isActive: pathname === '/dashboard/sales',
     },
     {
-      href: '#',
+      href: '/dashboard/stock',
       label: t('inventory.stock'),
+      icon: Package,
+      isActive: pathname === '/dashboard/stock',
+    },
+    {
+      href: '#2',
+      label: t('inventory.createWebsite'),
+      icon: Package,
+      isActive: false,
+      disabled: true,
+    },
+    {
+      href: '#3',
+      label: t('inventory.createEcommerce'),
       icon: Package,
       isActive: false,
       disabled: true,
