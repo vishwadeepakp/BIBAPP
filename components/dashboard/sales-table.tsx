@@ -29,7 +29,7 @@ interface InventoryApiResponse {
     limit?: number
 }
 
-export function StockTable() {
+export function SalesTable() {
     const { t } = useLanguage()
     const searchParams = useSearchParams()
     const route = useRouter()

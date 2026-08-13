@@ -42,7 +42,7 @@ export function InventoryTable() {
   const [currentPage, setCurrentPage] = useState(1)
   const [openModal, setOpenModal] = useState(false)
 
-  const itemsPerPage = 5
+  const itemsPerPage = 10
 
   const { data, isLoading, error: queryError, refetch } = useInventoryTable({
     page: currentPage,

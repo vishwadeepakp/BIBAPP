@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useLanguage } from '@/components/contexts/language-context'
+import { SalesTable } from '@/components/dashboard/sales-table'
 
 interface SalesTransaction {
   id: string
@@ -95,89 +96,7 @@ export function SalesLog() {
         </div>
       </div>
 
-      {/* Table */}
-      <div className="bg-white dark:bg-slate-800 rounded-xl shadow-md border border-gray-200 dark:border-slate-700 overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead>
-              <tr className="bg-gray-50 dark:bg-slate-700 border-b border-gray-200 dark:border-slate-600">
-                <th className="px-6 py-4 text-left text-sm font-semibold text-slate-900 dark:text-white">
-                  {t('sales.orderId')}
-                </th>
-                <th className="px-6 py-4 text-left text-sm font-semibold text-slate-900 dark:text-white">
-                  {t('sales.date')}
-                </th>
-                <th className="px-6 py-4 text-right text-sm font-semibold text-slate-900 dark:text-white">
-                  {t('sales.amount')}
-                </th>
-                <th className="px-6 py-4 text-left text-sm font-semibold text-slate-900 dark:text-white">
-                  {t('sales.status')}
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {displayedItems.map((transaction) => (
-                <tr
-                  key={transaction.id}
-                  className="border-b border-gray-200 dark:border-slate-700 hover:bg-gray-50 dark:hover:bg-slate-700/50 transition-colors last:border-b-0"
-                >
-                  <td className="px-6 py-4 text-sm font-medium text-slate-900 dark:text-white">
-                    {transaction.orderId}
-                  </td>
-                  <td className="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">
-                    {transaction.date}
-                  </td>
-                  <td className="px-6 py-4 text-sm text-right font-semibold text-slate-900 dark:text-white">
-                    ₹{transaction.amount.toLocaleString()}
-                  </td>
-                  <td className="px-6 py-4 text-sm">
-                    <span
-                      className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${getStatusStyles(
-                        transaction.status
-                      )}`}
-                    >
-                      {getStatusLabel(transaction.status)}
-                    </span>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      {/* Pagination */}
-      {totalPages > 1 && (
-        <div className="flex items-center justify-center gap-2">
-          <button
-            onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
-            disabled={currentPage === 1}
-            className="px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-slate-700"
-          >
-            Previous
-          </button>
-          {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-            <button
-              key={page}
-              onClick={() => setCurrentPage(page)}
-              className={`px-3 py-2 rounded-lg ${
-                currentPage === page
-                  ? 'bg-blue-600 text-white'
-                  : 'border border-gray-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-700'
-              }`}
-            >
-              {page}
-            </button>
-          ))}
-          <button
-            onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
-            disabled={currentPage === totalPages}
-            className="px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-slate-700"
-          >
-            Next
-          </button>
-        </div>
-      )}
+      <SalesTable />
     </div>
   )
 }
