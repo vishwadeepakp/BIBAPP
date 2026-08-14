@@ -223,6 +223,9 @@ export function InventoryTable() {
                     {t('inventory.name')}
                   </th>
                   <th className="px-6 py-4 text-left text-sm font-semibold text-slate-900 dark:text-white">
+                    {t('inventory.brand')}
+                  </th>
+                  <th className="px-6 py-4 text-left text-sm font-semibold text-slate-900 dark:text-white">
                     {t('inventory.category')}
                   </th>
                   <th className="px-6 py-4 text-left text-sm font-semibold text-slate-900 dark:text-white">
@@ -242,6 +245,9 @@ export function InventoryTable() {
                   </th>
                    <th className="px-6 py-4 text-center text-sm font-semibold text-slate-900 dark:text-white">
                     {t('inventory.buyingPrice')}
+                  </th>
+                     <th className="px-6 py-4 text-center text-sm font-semibold text-slate-900 dark:text-white">
+                    {t('sales.date')}
                   </th>
                   {/* <th className="px-6 _per_p_p_p text-left text-sm font-semibold text-slate-900 dark:text-white">
                     {t('inventory.status')}
@@ -268,8 +274,11 @@ export function InventoryTable() {
                       <td className="px-6 py-4 text-sm text-slate-900 dark:text-white font-medium">
                         {item.name}
                       </td>
+                       <td className="px-6 py-4 text-sm text-slate-900 dark:text-white font-medium">
+                        {item.brand || '—'}
+                      </td>
                       <td className="px-6 py-4 text-sm text-slate-900 dark:text-white font-medium">
-                        {item.category ?? item.Category ?? t('inventory.uncategorized')}
+                        {item.category || t('inventory.uncategorized')}
                       </td>
                       <td className="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">
                         {item.quantityPerPackage ?? '—'}
@@ -288,6 +297,9 @@ export function InventoryTable() {
                       </td>
                       <td className="px-6 py-4 text-sm text-slate-900 dark:text-white text-center font-semibold">
                         {item.buyingPrice ? item.buyingPrice : t('inventory.notAvailable')}
+                      </td>
+                      <td className="px-6 py-4 text-sm text-slate-900 dark:text-white text-center font-semibold">
+                        {item.createdAt ? new Date(item.createdAt).toLocaleDateString() : t('inventory.notAvailable')}
                       </td>
                       {/* <td className="px-6 py-4 text-sm">
                         <span

@@ -185,6 +185,9 @@ export function StockTable() {
                                         {t('inventory.name')}
                                     </th>
                                     <th className="px-6 py-4 text-left text-sm font-semibold text-slate-900 dark:text-white">
+                                        {t('inventory.brand')}
+                                    </th>
+                                    <th className="px-6 py-4 text-left text-sm font-semibold text-slate-900 dark:text-white">
                                         {t('inventory.category')}
                                     </th>
                                     <th className="px-6 py-4 text-left text-sm font-semibold text-slate-900 dark:text-white">
@@ -200,7 +203,13 @@ export function StockTable() {
                                         {t('inventory.sellPrice')}
                                     </th>
                                     <th className="px-6 py-4 text-center text-sm font-semibold text-slate-900 dark:text-white">
+                                        {t('inventory.buyingPrice')}
+                                    </th>
+                                    <th className="px-6 py-4 text-center text-sm font-semibold text-slate-900 dark:text-white">
                                         {t('inventory.expiry')}
+                                    </th>
+                                    <th className="px-6 py-4 text-center text-sm font-semibold text-slate-900 dark:text-white">
+                                        {t('sales.date')}
                                     </th>
                                     <th className="px-6 _per_p_p_p text-left text-sm font-semibold text-slate-900 dark:text-white">
                                         {t('inventory.status')}
@@ -228,6 +237,9 @@ export function StockTable() {
                                                 {item.name}
                                             </td>
                                             <td className="px-6 py-4 text-sm text-slate-900 dark:text-white font-medium">
+                                                {item.brand ? item.brand : '—'}
+                                            </td>
+                                            <td className="px-6 py-4 text-sm text-slate-900 dark:text-white font-medium">
                                                 {item.category ?? item.Category ?? t('inventory.uncategorized')}
                                             </td>
                                             <td className="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">
@@ -243,7 +255,13 @@ export function StockTable() {
                                                 {item.sellPrice ? item.sellPrice.toLocaleString() : '—'}
                                             </td>
                                             <td className="px-6 py-4 text-sm text-slate-900 dark:text-white text-center font-semibold">
-                                                {item.expiry ? new Date(item.expiry).toLocaleDateString() : t('inventory.notAvailable')}
+                                                {item.buyPrice ? item.buyPrice.toLocaleString() : '—'}
+                                            </td>
+                                            <td className="px-6 py-4 text-sm text-slate-900 dark:text-white text-center font-semibold">
+                                                {item.expiryDate ? new Date(item.expiryDate).toLocaleDateString() : t('inventory.notAvailable')}
+                                            </td>
+                                            <td className="px-6 py-4 text-sm text-slate-900 dark:text-white text-center font-semibold">
+                                                {item.updatedAt ? new Date(item.updatedAt).toLocaleDateString() : t('inventory.notAvailable')}
                                             </td>
                                             <td className="px-6 py-4 text-sm">
                                                 <span

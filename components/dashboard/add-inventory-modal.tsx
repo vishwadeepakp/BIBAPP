@@ -40,6 +40,7 @@ export function AddInventoryModal({
     tags: string[]
     supplier_name: string
     expiry_date: string
+    brand: string
   }>({
     name: '',
     quantity_per_package: '',
@@ -53,6 +54,7 @@ export function AddInventoryModal({
     tags: [],
     supplier_name: '',
     expiry_date: '',
+    brand: '',
   })
 
   const saveInventoryData = useSaveInventoryData()
@@ -75,6 +77,7 @@ export function AddInventoryModal({
           tags: data.tags || [],
           expiry_date: data.expiry_date || '',
           supplier_name: data.supplier_name || '',
+          brand: data.brand || '',
         })
       }
     }
@@ -142,9 +145,12 @@ export function AddInventoryModal({
 
                 <h2 className="text-xl font-bold text-slate-900 dark:text-white">
                   Add Inventory
-                  <span className="rounded-full bg-indigo-800/60 px-2 py-0.5 text-xs font-bold text-indigo-100 border border-indigo-400/30">
-                    {modelCount} / {jsonObject?.length}
-                  </span>
+                  {
+                    jsonObject?.length &&
+                    <span className="rounded-full bg-indigo-800/60 px-4 m-4 py-0.5 text-xs font-bold text-indigo-100 border border-indigo-400/30">
+                      {modelCount} / {jsonObject?.length}
+                    </span>
+                  }
                 </h2>
 
                 <p className="text-sm text-slate-500">
@@ -171,11 +177,9 @@ export function AddInventoryModal({
             {/* Product Name */}
 
             <div>
-
               <label className="mb-2 block text-sm font-medium">
                 Product Name
               </label>
-
               <input
                 type="text"
                 placeholder="Enter product name"
@@ -188,13 +192,26 @@ export function AddInventoryModal({
                 }
                 className="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-transparent px-4 py-3 outline-none focus:border-blue-500"
               />
-
             </div>
-
+            <div>
+              <label className="mb-2 block text-sm font-medium">
+                Brand
+              </label>
+              <input
+                type="text"
+                placeholder="Enter Brand name"
+                value={formData.brand}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    brand: e.target.value,
+                  })
+                }
+                className="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-transparent px-4 py-3 outline-none focus:border-blue-500"
+              />
+            </div>
             <div className="grid grid-cols-2 gap-4">
-
               <div>
-
                 <label className="mb-2 block text-sm font-medium">
                   Quantity per Package
                 </label>
@@ -384,13 +401,7 @@ export function AddInventoryModal({
                       expiry_date: e.target.value,
                     })
                   }
-                  style={{
-                    padding: '8px',
-                    borderRadius: '6px',
-                    border: '1px solid #ccc',
-                    fontSize: '16px',
-                    marginTop: '4px'
-                  }}
+                  className="w-full rounded-lg border border-slate-300 dark:border-slate-700 px-4 py-3"
                 />
 
               </div>

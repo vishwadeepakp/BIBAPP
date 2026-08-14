@@ -1,8 +1,16 @@
 'use client';
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 
 export default function InventoryModal({ isOpen, onClose, data = [] }) {
+  const [mounted, setMounted] = useState(false);
+
+  // SSR Safe Mounting
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   // ESC Key दबाने पर Popup बंद करने के लिए
   useEffect(() => {
     const handleKeyDown = (e) => {
@@ -18,18 +26,15 @@ export default function InventoryModal({ isOpen, onClose, data = [] }) {
     };
   }, [isOpen, onClose]);
 
-  if (!isOpen) return null;
+  if (!isOpen || !mounted) return null;
 
-  // 1. जिन कॉलम्स को टेबल में नहीं दिखाना है (Internal Fields)
   const EXCLUDED_KEYS = ['id', 'user_id', 'raw_prompt', 'deleted_at'];
 
-  // 2. Dynamic Columns Extract करना (पहले ऑब्जेक्ट से)
   const columns =
     data && data.length > 0
       ? Object.keys(data[0]).filter((key) => !EXCLUDED_KEYS.includes(key))
       : [];
 
-  // 3. Header Title Formatter (e.g., "selling_price" -> "Selling Price")
   const formatHeader = (key) => {
     return key
       .replace(/_/g, ' ')
@@ -38,13 +43,11 @@ export default function InventoryModal({ isOpen, onClose, data = [] }) {
       .replace(/\b\w/g, (char) => char.toUpperCase());
   };
 
-  // 4. Dynamic Cell Renderer (हर डेटा टाइप के हिसाब से सुंदर UI)
   const renderCellValue = (key, value) => {
     if (value === null || value === undefined || value === '') {
       return <span className="text-gray-400 text-xs">-</span>;
     }
 
-    // Badge for Type (IN / OUT)
     if (key === 'type') {
       return (
         <span
@@ -59,7 +62,6 @@ export default function InventoryModal({ isOpen, onClose, data = [] }) {
       );
     }
 
-    // Array Handling (e.g. Tags)
     if (Array.isArray(value)) {
       if (value.length === 0) return <span className="text-gray-400 text-xs">-</span>;
       return (
@@ -76,7 +78,6 @@ export default function InventoryModal({ isOpen, onClose, data = [] }) {
       );
     }
 
-    // Date Handling (ISO Strings)
     if (typeof value === 'string' && (key.includes('at') || key.includes('date'))) {
       const parsedDate = Date.parse(value);
       if (!isNaN(parsedDate) && value.length >= 10) {
@@ -95,17 +96,16 @@ export default function InventoryModal({ isOpen, onClose, data = [] }) {
       }
     }
 
-    // Price Formatting
     if (key.includes('price') && !isNaN(value)) {
       return <span className="font-medium text-gray-900">₹{parseFloat(value).toFixed(2)}</span>;
     }
 
-    // Quantity / Generic Numbers or Strings
     return <span className="font-medium text-gray-800">{value.toString()}</span>;
   };
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6">
+  // React Portal से यह Directly <body> पर रेंडर होगा!
+  return createPortal(
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 sm:p-6">
       {/* Backdrop */}
       <div
         className="fixed inset-0 bg-black/50 backdrop-blur-sm transition-opacity"
@@ -135,7 +135,7 @@ export default function InventoryModal({ isOpen, onClose, data = [] }) {
           </button>
         </div>
 
-        {/* Modal Body: Fully Dynamic Table */}
+        {/* Modal Body */}
         <div className="flex-1 overflow-y-auto pr-1">
           {!data || data.length === 0 ? (
             <div className="flex items-center justify-center p-8 text-gray-500 bg-gray-50 rounded-lg border border-dashed border-gray-300">
@@ -145,8 +145,6 @@ export default function InventoryModal({ isOpen, onClose, data = [] }) {
             <div className="w-full overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-sm text-gray-600">
-                  
-                  {/* Dynamic Table Header */}
                   <thead className="bg-gray-50 text-xs uppercase tracking-wider text-gray-700 border-b border-gray-200">
                     <tr>
                       {columns.map((colKey) => (
@@ -157,7 +155,6 @@ export default function InventoryModal({ isOpen, onClose, data = [] }) {
                     </tr>
                   </thead>
 
-                  {/* Dynamic Table Body */}
                   <tbody className="divide-y divide-gray-100">
                     {data.map((row, rowIndex) => (
                       <tr key={row.id || rowIndex} className="hover:bg-gray-50/80 transition-colors">
@@ -169,7 +166,6 @@ export default function InventoryModal({ isOpen, onClose, data = [] }) {
                       </tr>
                     ))}
                   </tbody>
-
                 </table>
               </div>
             </div>
@@ -187,6 +183,7 @@ export default function InventoryModal({ isOpen, onClose, data = [] }) {
         </div>
 
       </div>
-    </div>
+    </div>,
+    document.body // DOM Target
   );
 }

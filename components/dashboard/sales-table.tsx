@@ -5,6 +5,8 @@ import { useLanguage } from '@/components/contexts/language-context'
 import { Search } from 'lucide-react'
 import { useSearchParams, useRouter, usePathname } from 'next/navigation'
 import { useStockTable } from '@/hooks/useAi'
+import { Plus } from 'lucide-react'
+import { AddSalesModal } from './addSalesModal'
 
 interface InventoryItem {
     id: string
@@ -40,6 +42,7 @@ export function SalesTable() {
     const [searchTerm, setSearchTerm] = useState('')
     const [currentPage, setCurrentPage] = useState(1)
     const [openModal, setOpenModal] = useState(false)
+    const [isModalOpen, setIsModalOpen] = useState(false);
 
     const itemsPerPage = 10
 
@@ -154,12 +157,39 @@ export function SalesTable() {
         <>
             <div className="space-y-6">
                 <div>
-                    <h1 className="text-3xl font-bold text-slate-900 dark:text-white">
-                        {t('dashboard.stock')}
-                    </h1>
                     <p className="text-slate-600 dark:text-slate-400 mt-1">
                         Manage your product stock efficiently and keep track of inventory levels in real-time.
                     </p>
+                </div>
+                <div className="flex flex-wrap items-center gap-3">
+                    <button
+                        onClick={() => setIsModalOpen(true)}
+                        className="flex items-center gap-2 rounded-lg bg-blue-600 px-5 py-3 text-white hover:bg-blue-700 transition"
+                    >
+                        <Plus className="w-5 h-5" aria-label={t('inventory.addInventory')} />
+                    </button>
+
+                    <button
+                        type="button"
+                        disabled
+                        className="flex items-center gap-2 rounded-lg border border-gray-300 dark:border-slate-600 bg-gray-100 dark:bg-slate-700 px-5 py-3 text-sm text-slate-600 dark:text-slate-300 opacity-70 cursor-not-allowed"
+                        title="Coming soon"
+                    >
+                        <span>📷</span>
+                        {t('inventory.barcodeScan')}
+                        <span className="text-xs font-medium text-amber-600 dark:text-amber-400">{t('inventory.comingSoon')}</span>
+                    </button>
+
+                    <button
+                        type="button"
+                        disabled
+                        className="flex items-center gap-2 rounded-lg border border-gray-300 dark:border-slate-600 bg-gray-100 dark:bg-slate-700 px-5 py-3 text-sm text-slate-600 dark:text-slate-300 opacity-70 cursor-not-allowed"
+                        title="Coming soon"
+                    >
+                        <span>🧾</span>
+                        {t('inventory.aiBillScan')}
+                        <span className="text-xs font-medium text-amber-600 dark:text-amber-400">{t('inventory.comingSoon')}</span>
+                    </button>
                 </div>
 
                 <div className="relative">
@@ -303,6 +333,12 @@ export function SalesTable() {
                     </div>
                 )}
             </div>
+            {isModalOpen && (
+                <AddSalesModal
+                    open={isModalOpen}
+                    onClose={() => setIsModalOpen(false)}
+                />
+            )}
         </>
     )
 }
