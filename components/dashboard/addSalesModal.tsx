@@ -1,8 +1,11 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, use } from 'react'
 import { X, Plus, Trash2, ShoppingCart, Tag } from 'lucide-react'
-import api from "@/api/axiosInstance"; // <--- आपका Axios instance import हो गया
+import { useSaveSalesData } from '@/hooks/useAi'
+
+import api from "@/api/axiosInstance";
+import toast from 'react-hot-toast';
 export interface SaleItem {
     product_name: string
     brand_name: string
@@ -40,6 +43,7 @@ interface AutoCompleteDropdownProps {
     onSelectSuggestion?: (item: any) => void
     searchType: 'product' | 'brand'
     hasError?: boolean
+    brandName?: string
 }
 
 function AutoCompleteDropdown({
@@ -49,6 +53,7 @@ function AutoCompleteDropdown({
     onSelectSuggestion,
     searchType,
     hasError,
+    brandName
 }: AutoCompleteDropdownProps) {
     const [suggestions, setSuggestions] = useState<any[]>([])
     const [loading, setLoading] = useState(false)
@@ -58,12 +63,13 @@ function AutoCompleteDropdown({
     const wrapperRef = useRef<HTMLDivElement>(null)
     const debouncedQuery = useDebounce(value, 300)
 
+
     // Validation: If user clicks outside without selecting from list, clear input
     useEffect(() => {
         function handleClickOutside(event: MouseEvent) {
             if (wrapperRef.current && !wrapperRef.current.contains(event.target as Node)) {
                 setIsOpen(false)
-                if (value && !isSelected) {
+                if (value && !isSelected && searchType === 'product') {
                     onChange('') // Clear invalid custom typing
                 }
             }
@@ -86,18 +92,24 @@ function AutoCompleteDropdown({
         const fetchSuggestions = async () => {
             try {
                 // REPLACE WITH YOUR REAL API CALL:
-                const res = await api.get(`/stock/stock-suggestion?productName=${debouncedQuery}`)
+                const productName = `${searchType === 'product' ? 'productName' : 'brandName'}=${debouncedQuery}`
+                const brand = (brandName && brandName != '') ? `&brandName=${brandName}` : ''
+
+                const res = await api.get(`/stock/stock-suggestion?${productName}${brand}`)
+                //  const res = await api.get(`/stock/stock-suggestion?productName=${debouncedQuery}${brand}`)
                 console.log("data", res)
 
-                if (isMounted) {
-                    if (searchType === 'product') {
-                        setSuggestions(res?.data?.data || [])
-                    } else {
-                        setSuggestions([
-                            { name: `${debouncedQuery} Corp` },
-                            { name: `${debouncedQuery} Industries` },
-                        ])
-                    }
+                if (isMounted && res?.data?.data?.length > 0) {
+                    setSuggestions(res?.data?.data || [])
+                } else {
+                    toast('No suggestions found', {
+                        icon: 'ℹ️',
+                        style: {
+                            borderRadius: '8px',
+                            background: '#333',
+                            color: '#fff',
+                        },
+                    });
                 }
             } catch (err) {
                 console.log('Failed to fetch suggestions', err)
@@ -124,6 +136,14 @@ function AutoCompleteDropdown({
                     setIsSelected(false)
                     setIsOpen(true)
                 }}
+                // onFocus={() => {
+                //     console.log("focus")
+                //     const localSuggestions = localStorage.getItem(`productSuggestions`)
+                //     if (localSuggestions && JSON.parse(localSuggestions).length > 0) {
+                //         setSuggestions(JSON.parse(localSuggestions)?.reverse() || [])
+                //     }
+                //     setIsOpen(true)
+                // }}
                 className={`w-full rounded-lg border px-3 py-2 text-sm bg-white dark:bg-slate-900 outline-none transition ${hasError
                     ? 'border-red-500 bg-red-50/30'
                     : 'border-slate-300 dark:border-slate-700 focus:border-emerald-500'
@@ -149,8 +169,14 @@ function AutoCompleteDropdown({
                             }}
                             className="cursor-pointer px-3 py-2 text-sm hover:bg-emerald-50 dark:hover:bg-emerald-950/40 flex justify-between items-center text-slate-800 dark:text-slate-200"
                         >
-                            <span>{`${item.name} ${item.quantity_per_package}${item.unit}`}</span>
-                            {item.brand && <span className="text-xs text-slate-400">({item.brand})</span>}
+                            {searchType === 'product' ?
+                                <>
+                                    <span>{`${item.name} ${item.quantity_per_package}${item.unit}`}</span>
+                                    {item.brand && <span className="text-xs text-slate-400">({item.brand})</span>}
+                                </>
+                                :
+                                <span>{item.brand}</span>
+                            }
                         </div>
                     ))}
                 </div>
@@ -188,6 +214,8 @@ export function AddSalesModal({ open, onClose, onSave }: AddSalesModalProps) {
 
     const [errors, setErrors] = useState<Record<string, string>>({})
     const [isSubmitting, setIsSubmitting] = useState(false)
+
+    const saveSalesData = useSaveSalesData()
 
     if (!open) return null
 
@@ -227,9 +255,13 @@ export function AddSalesModal({ open, onClose, onSave }: AddSalesModalProps) {
 
             // 1. नाम, ब्रांड, प्राइस और HSN एक साथ सेट करें
             item.product_name = selected.name || item.product_name
-            if (selected.brand) item.brand_name = selected.brand
+            item.brand_name = selected.brand || item.brand_name
             if (selected.sellPrice) item.unit_price = Number(selected.sellPrice)
             if (selected.hsn) item.hsn_code = selected.hsn
+
+            const suggestions = JSON.parse(localStorage.getItem('productSuggestions') || '[]')
+            const newData = [...suggestions, selected].slice(-10)
+            localStorage.setItem('productSuggestions', JSON.stringify(newData))
 
             // 2. तुरंत नया Total कैलकुलेट करें
             item.total = calculateItemTotal(
@@ -245,9 +277,10 @@ export function AddSalesModal({ open, onClose, onSave }: AddSalesModalProps) {
     }
 
     const handleItemChange = (index: number, field: keyof SaleItem, value: any) => {
-        console.log('handleItemChange', index, field, value)
+        console.log('handleItemChange', index, field, value);
         const updatedItems = [...items]
         const item = { ...updatedItems[index] }
+
 
         if (field === 'quantity' || field === 'unit_price' || field === 'discount_value') {
             item[field] = value === '' ? '' : (Math.max(0, Number(value)) as any)
@@ -326,7 +359,10 @@ export function AddSalesModal({ open, onClose, onSave }: AddSalesModalProps) {
                 date: new Date().toISOString(),
             }
 
-            if (onSave) await onSave(payload)
+            await saveSalesData.mutateAsync(payload);
+
+            // if (onSave) await onSave(payload)
+
             onClose()
         } catch (error) {
             console.error('Failed to submit sale:', error)
@@ -334,6 +370,8 @@ export function AddSalesModal({ open, onClose, onSave }: AddSalesModalProps) {
             setIsSubmitting(false)
         }
     }
+
+    console.log('items', items);
 
     return (
         <div className="fixed inset-0 z-50 overflow-y-auto bg-black/50 backdrop-blur-sm">
@@ -429,6 +467,7 @@ export function AddSalesModal({ open, onClose, onSave }: AddSalesModalProps) {
                                             <AutoCompleteDropdown
                                                 placeholder="Select Product *"
                                                 value={item.product_name}
+                                                brandName={item.brand_name}
                                                 searchType="product"
                                                 hasError={!!errors[`item_${index}_name`]}
                                                 onChange={(val) => handleItemChange(index, 'product_name', val)}
@@ -446,6 +485,29 @@ export function AddSalesModal({ open, onClose, onSave }: AddSalesModalProps) {
                                                 value={item.brand_name}
                                                 searchType="brand"
                                                 onChange={(val) => handleItemChange(index, 'brand_name', val)}
+                                                onSelectSuggestion={(selected) => {
+
+                                                    setItems((prevItems) => {
+                                                        const updated = [...prevItems]
+                                                        const item = { ...updated[index] }
+
+                                                        if (selected.brand) item.brand_name = selected.brand
+                                                        item.product_name = ""
+                                                        item.unit_price = 0
+                                                        item.hsn_code = ""
+
+                                                        // 2. तुरंत नया Total कैलकुलेट करें
+                                                        item.total = calculateItemTotal(
+                                                            item.quantity,
+                                                            item.unit_price,
+                                                            item.discount_value,
+                                                            item.discount_type
+                                                        )
+
+                                                        updated[index] = item
+                                                        return updated
+                                                    })
+                                                }}
                                             />
                                         </div>
 

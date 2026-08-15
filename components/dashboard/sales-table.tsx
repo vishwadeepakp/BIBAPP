@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { useLanguage } from '@/components/contexts/language-context'
 import { Search } from 'lucide-react'
 import { useSearchParams, useRouter, usePathname } from 'next/navigation'
-import { useStockTable } from '@/hooks/useAi'
+import { useSaleTable } from '@/hooks/useAi'
 import { Plus } from 'lucide-react'
 import { AddSalesModal } from './addSalesModal'
 
@@ -46,7 +46,7 @@ export function SalesTable() {
 
     const itemsPerPage = 10
 
-    const { data, isLoading, error: queryError, refetch } = useStockTable({
+    const { data, isLoading, error: queryError, refetch } = useSaleTable({
         page: currentPage,
         limit: itemsPerPage,
         search: searchTerm.trim(),
