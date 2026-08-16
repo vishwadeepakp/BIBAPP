@@ -343,6 +343,23 @@ export const useSaveSalesData = () => {
 };
 
 
+export const useSaleItem = (saleId: string) => {
+    return useQuery({
+        queryKey: ["saleItem", saleId],
+        queryFn: async () => {
+            const response = await api.get("ai/sales/items", {
+                params: {
+                    saleId,
+                },
+            });
+            return response.data.data;
+        },
+        staleTime: 0,
+        refetchOnWindowFocus: false,
+    });
+};
+
+
 function speakText(text: string) {
     // Check अगर ब्राउज़र Speech Synthesis सपोर्ट करता है
     if ('speechSynthesis' in window) {

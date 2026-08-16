@@ -62,7 +62,6 @@ export function SalesTable() {
     const [openModal, setOpenModal] = useState(false)
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isItmModalOpen, setIsItemModalOpen] = useState(false);
-    const [itemModalData, setItemModalData] = useState([]);
     const [selectedItem, setSelectedItem] = useState({});
 
 
@@ -174,8 +173,6 @@ export function SalesTable() {
     }
 
     const handleEyeClick = (item: number) => {
-
-        setItemModalData(item.items);
         setSelectedItem({ ...item, invoice_number: item.invoice_number, sale_id: item.sale_id });
         // Toggle the modal state
         setIsItemModalOpen(true);
@@ -260,9 +257,6 @@ export function SalesTable() {
                                     <th className="px-6 py-4 text-center text-sm font-semibold text-slate-900 dark:text-white">
                                         Date
                                     </th>
-                                    <th className="px-6 py-4 text-center text-sm font-semibold text-slate-900 dark:text-white">
-                                        {t('inventory.expiry')}
-                                    </th>
                                     <th className="px-6 _per_p_p_p text-left text-sm font-semibold text-slate-900 dark:text-white">
                                         {t('inventory.status')}
                                     </th>
@@ -290,7 +284,11 @@ export function SalesTable() {
                                                     className="inline-flex items-center text-green-600 cursor-pointer"
                                                     onClick={() => handleEyeClick(item)}
                                                 >
-                                                    {item.invoice_number} <Eye className="ml-2" />
+                                                    {isItmModalOpen ? (
+                                                        <span className="animate-pulse">Loading...</span>
+                                                    ) : (
+                                                        <>{item.invoice_number}<Eye className="ml-2" /></>
+                                                    )}
                                                 </span>
                                             </td>
                                             <td className="px-6 py-4 text-sm text-slate-900 dark:text-white font-medium">
@@ -310,9 +308,6 @@ export function SalesTable() {
                                             </td>
                                             <td className="px-6 py-4 text-sm text-slate-900 dark:text-white text-center font-semibold">
                                                 {item.sale_date ? new Intl.DateTimeFormat('default', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' }).format(new Date(item.sale_date)) : t('inventory.notAvailable')}
-                                            </td>
-                                            <td className="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">
-                                                {item.payment_mode ?? '—'}
                                             </td>
                                             <td className="px-6 py-4 text-sm">
                                                 <span
@@ -382,7 +377,6 @@ export function SalesTable() {
                 <SaleDetailsModal
                     isOpen={isItmModalOpen}
                     onClose={() => setIsItemModalOpen(false)}
-                    saleItems={itemModalData}
                     invoiceInfo={selectedItem}
                 />
             )}

@@ -1,29 +1,35 @@
 import React, { useState, useRef } from 'react';
 import { X, FileText, Download, Receipt, Share2, Printer, CheckCircle } from 'lucide-react';
 import html2pdf from 'html2pdf.js';
+import {  useGetProfile } from '@/hooks/useUserApi';
+import {  useSaleItem } from '@/hooks/useAi';
 
-const SaleDetailsModal = ({ isOpen, onClose, saleItems = [], invoiceInfo = {}, storeDetailsProp = {} }) => {
+const SaleDetailsModal = ({ isOpen, onClose, invoiceInfo = {}, storeDetailsProp = {} }) => {
   // 1. Invoice Type State: 'gst' for B2B Tax Invoice, 'retail' for Non-GST Bill
   const [invoiceType, setInvoiceType] = useState('gst');
 
   const printRef = useRef(null);
   const iframeRef = useRef(null);
 
-  // Fallback / Normalized Data extraction
-  const items = invoiceInfo?.items?.length ? invoiceInfo.items : saleItems;
+  const { data } = useGetProfile();
+  storeDetailsProp = data;
 
-  if (!isOpen || !items.length) return null;
+  const { data: saleData } = useSaleItem(invoiceInfo?.sale_id);
+  console.log("saleData", saleData);
+  const items = saleData;
+
+  if (!isOpen || !items?.length) return null;
 
   // Dynamic Store / Seller Details
   const storeDetails = {
-    name: storeDetailsProp?.name || "VINDHYAWASINI TRADERS",
-    tagline: storeDetailsProp?.tagline || "Wholesale & Retail Agri Products",
-    address: storeDetailsProp?.address || "Main Market Road, Opp. SBI Bank, Solapur, MS - 413001",
-    gstin: storeDetailsProp?.gstin || invoiceInfo?.store_gstin || "27AAAAA0000A1Z5",
-    pan: storeDetailsProp?.pan || "AAAAA0000A",
-    state: storeDetailsProp?.state || "Maharashtra (27)",
-    phone: storeDetailsProp?.phone || "+91 98765 43210",
-    email: storeDetailsProp?.email || "contact@store.com",
+    name: storeDetailsProp?.storeName || "",
+    tagline: storeDetailsProp?.tagline || "",
+    address: `${storeDetailsProp?.addressLine1 || ''} ${storeDetailsProp?.addressLine2 || ''}, ${storeDetailsProp?.landmark || ''}, ${storeDetailsProp?.state || ''} - ${storeDetailsProp?.pincode || ''}`,
+    gstin: storeDetailsProp?.gstin || "",
+    pan: storeDetailsProp?.pan || "",
+    state: storeDetailsProp?.state || "",
+    phone: storeDetailsProp?.phone || "",
+    email: storeDetailsProp?.email || "",
     // Bank Details - Dynamic check
     bankName: invoiceInfo?.bank_name || storeDetailsProp?.bankName || null,
     accountNo: invoiceInfo?.account_number || storeDetailsProp?.accountNo || null,
@@ -36,9 +42,9 @@ const SaleDetailsModal = ({ isOpen, onClose, saleItems = [], invoiceInfo = {}, s
 
   // Dynamic Customer Details
   const customerDetails = {
-    name: invoiceInfo?.customer_name || "Cash Customer",
+    name: invoiceInfo?.customer_name || "N/A",
     phone: invoiceInfo?.customer_phone || "N/A",
-    address: invoiceInfo?.customer_address || "Local Market",
+    address: invoiceInfo?.customer_address || "",
     gstin: invoiceInfo?.customer_gstin || null,
     state: invoiceInfo?.customer_state || "Maharashtra (27)"
   };
