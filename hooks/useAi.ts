@@ -131,6 +131,7 @@ export const showCustomToast = ({
 
 
 const INVENTORY_TABLE_QUERY_KEY = ['inventory', 'table'] as const;
+const SALE_TABLE_QUERY_KEY = ['sales', 'table'] as const;
 
 export const useInventoryTable = ({ page, limit, search }: { page: number; limit: number; search: string }) => {
     return useQuery({
@@ -174,7 +175,7 @@ export const useStockTable = ({ page, limit, search }: { page: number; limit: nu
 
 export const useSaleTable = ({ page, limit, search }: { page: number; limit: number; search: string }) => {
     return useQuery({
-        queryKey: ["useStockTable", page, limit, search],
+        queryKey: [...SALE_TABLE_QUERY_KEY, page, limit, search],
         queryFn: async () => {
             const response = await api.get("ai/sales/table", {
                 params: {
@@ -269,6 +270,7 @@ export const useSendText = () => {
 };
 
 export const useSaveInventoryData = () => {
+
     const queryClient = useQueryClient();
 
     return useMutation({
@@ -305,6 +307,8 @@ export const useSaveInventoryData = () => {
 };
 
 export const useSaveSalesData = () => {
+    const queryClient = useQueryClient();
+
     return useMutation({
         mutationFn: async (payload: any) => {
             toast.loading("Saving...", {
@@ -328,6 +332,12 @@ export const useSaveSalesData = () => {
                     "Failed to Save Data";
                 throw new Error(errorMessage);
             }
+        },
+        onSuccess: async () => {
+            await queryClient.invalidateQueries({
+                queryKey: SALE_TABLE_QUERY_KEY,
+                refetchType: 'active',
+            });
         },
     });
 };

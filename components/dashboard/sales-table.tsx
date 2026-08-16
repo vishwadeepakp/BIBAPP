@@ -5,8 +5,9 @@ import { useLanguage } from '@/components/contexts/language-context'
 import { Search } from 'lucide-react'
 import { useSearchParams, useRouter, usePathname } from 'next/navigation'
 import { useSaleTable } from '@/hooks/useAi'
-import { Plus } from 'lucide-react'
+import { Plus, Eye } from 'lucide-react'
 import { AddSalesModal } from './addSalesModal'
+import SaleDetailsModal from './ItemModel'
 
 interface InventoryItem {
     id: string
@@ -31,6 +32,23 @@ interface InventoryApiResponse {
     limit?: number
 }
 
+const dummyData = [
+    {
+        "id": 4,
+        "sale_id": 2,
+        "product_name": "Dahi",
+        "brand_name": "Amul",
+        "hsn_code": null,
+        "quantity": 1,
+        "unit_price": "22.00",
+        "discount_value": "10.00",
+        "discount_type": "percent",
+        "total": "19.80",
+        "createdAt": "2026-08-15T21:48:55.000Z",
+        "updatedAt": "2026-08-15T21:48:55.000Z"
+    }
+];
+
 export function SalesTable() {
     const { t } = useLanguage()
     const searchParams = useSearchParams()
@@ -43,6 +61,10 @@ export function SalesTable() {
     const [currentPage, setCurrentPage] = useState(1)
     const [openModal, setOpenModal] = useState(false)
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isItmModalOpen, setIsItemModalOpen] = useState(false);
+    const [itemModalData, setItemModalData] = useState([]);
+    const [selectedItem, setSelectedItem] = useState({});
+
 
     const itemsPerPage = 10
 
@@ -125,11 +147,9 @@ export function SalesTable() {
         return 'in-stock'
     }
 
-    const getStatusStyles = (quantity: number | string) => {
-        if (quantity >= 10) {
+    const getStatusStyles = (status: number | string) => {
+        if (status == 'completed') {
             return 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400'
-        } else if (quantity >= 5) {
-            return 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400'
         } else {
             return 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400'
         }
@@ -152,6 +172,14 @@ export function SalesTable() {
             setOpenModal(false)
         }, 300)
     }
+
+    const handleEyeClick = (item: number) => {
+
+        setItemModalData(item.items);
+        setSelectedItem({ ...item, invoice_number: item.invoice_number, sale_id: item.sale_id });
+        // Toggle the modal state
+        setIsItemModalOpen(true);
+    };
 
     return (
         <>
@@ -212,22 +240,25 @@ export function SalesTable() {
                             <thead>
                                 <tr className="bg-gray-50 dark:bg-slate-700 border-b border-gray-200 dark:border-slate-600">
                                     <th className="px-6 py-4 text-left text-sm font-semibold text-slate-900 dark:text-white">
-                                        {t('inventory.name')}
+                                        Bill / invoice
                                     </th>
                                     <th className="px-6 py-4 text-left text-sm font-semibold text-slate-900 dark:text-white">
-                                        {t('inventory.category')}
+                                        Customer
+                                    </th>
+                                    <th className=" items-center px-6 py-4 text-left text-sm font-semibold text-slate-900 dark:text-white">
+                                        Items
                                     </th>
                                     <th className="px-6 py-4 text-left text-sm font-semibold text-slate-900 dark:text-white">
-                                        {t('inventory.quantity_per_package')}
+                                        phone
                                     </th>
                                     <th className="px-6 py-4 text-left text-sm font-semibold text-slate-900 dark:text-white">
-                                        {t('inventory.unit')}
+                                        Total Amount
                                     </th>
                                     <th className="px-6 py-4 text-center text-sm font-semibold text-slate-900 dark:text-white">
-                                        {t('inventory.quantity')}
+                                        Payment Mode
                                     </th>
                                     <th className="px-6 py-4 text-center text-sm font-semibold text-slate-900 dark:text-white">
-                                        {t('inventory.sellPrice')}
+                                        Date
                                     </th>
                                     <th className="px-6 py-4 text-center text-sm font-semibold text-slate-900 dark:text-white">
                                         {t('inventory.expiry')}
@@ -255,31 +286,39 @@ export function SalesTable() {
                                             className="border-b border-gray-200 dark:border-slate-700 hover:bg-gray-50 dark:hover:bg-slate-700/50 transition-colors last:border-b-0"
                                         >
                                             <td className="px-6 py-4 text-sm text-slate-900 dark:text-white font-medium">
-                                                {item.name}
+                                                <span
+                                                    className="inline-flex items-center text-green-600 cursor-pointer"
+                                                    onClick={() => handleEyeClick(item)}
+                                                >
+                                                    {item.invoice_number} <Eye className="ml-2" />
+                                                </span>
                                             </td>
                                             <td className="px-6 py-4 text-sm text-slate-900 dark:text-white font-medium">
-                                                {item.category ?? item.Category ?? t('inventory.uncategorized')}
+                                                {item.customer_name}
+                                            </td>
+                                            <td className="px-6 py-4 text-sm text-slate-900 dark:text-white font-medium">
+                                                {item.items && item.items.length > 0 ? item.items.length : '—'}
+                                            </td>
+                                            <td className="px-6 py-4 text-sm text-slate-900 dark:text-white font-medium">
+                                                {item.customer_phone ? item.customer_phone : '—'}
                                             </td>
                                             <td className="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">
-                                                {item.quantity_per_package ?? '—'}
+                                                {item.grand_total ?? '—'}
                                             </td>
                                             <td className="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">
-                                                {item.unit ?? '—'}
+                                                {item.payment_mode ?? '—'}
                                             </td>
                                             <td className="px-6 py-4 text-sm text-slate-900 dark:text-white text-center font-semibold">
-                                                {item.quantity}
+                                                {item.sale_date ? new Intl.DateTimeFormat('default', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' }).format(new Date(item.sale_date)) : t('inventory.notAvailable')}
                                             </td>
-                                            <td className="px-6 py-4 text-sm text-slate-900 dark:text-white text-center font-semibold">
-                                                {item.sellPrice ? item.sellPrice.toLocaleString() : '—'}
-                                            </td>
-                                            <td className="px-6 py-4 text-sm text-slate-900 dark:text-white text-center font-semibold">
-                                                {item.expiry ? new Date(item.expiry).toLocaleDateString() : t('inventory.notAvailable')}
+                                            <td className="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">
+                                                {item.payment_mode ?? '—'}
                                             </td>
                                             <td className="px-6 py-4 text-sm">
                                                 <span
-                                                    className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${getStatusStyles(item.quantity)}`}
+                                                    className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${getStatusStyles(item.status)}`}
                                                 >
-                                                    {getStatusLabel(item.quantity)}
+                                                    {item.status}
                                                 </span>
                                             </td>
                                         </tr>
@@ -337,6 +376,14 @@ export function SalesTable() {
                 <AddSalesModal
                     open={isModalOpen}
                     onClose={() => setIsModalOpen(false)}
+                />
+            )}
+            {isItmModalOpen && (
+                <SaleDetailsModal
+                    isOpen={isItmModalOpen}
+                    onClose={() => setIsItemModalOpen(false)}
+                    saleItems={itemModalData}
+                    invoiceInfo={selectedItem}
                 />
             )}
         </>
