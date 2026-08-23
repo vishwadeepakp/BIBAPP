@@ -40,10 +40,15 @@ export const useSaveProfile = () => {
 }
 
 export const useGetProfile = () => {
+
     return useQuery({
         queryKey: ['getPrfile'],
         queryFn: async () => {
+            toast.loading("Loading...", {
+                id: "GetProfile",
+            });
             const response = await api.get("/profile/get-profile", {});
+            toast.dismiss("GetProfile");
             return response.data.data;
         },
         staleTime: 0,

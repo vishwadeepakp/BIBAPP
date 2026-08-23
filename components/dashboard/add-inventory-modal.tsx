@@ -68,7 +68,7 @@ export function AddInventoryModal({
           name: data.name || '',
           unit: data.unit || '',
           quantity_per_package: data.quantity_per_package || '',
-          quantity: data.package_count || '',
+          quantity: data.quantity || '',
           category: data.category || '',
           status: data.status || 'in-stock',
           description: data.description || '',

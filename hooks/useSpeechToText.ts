@@ -59,7 +59,7 @@ export function useSpeechToText({
 
     const recognition = new SpeechRecognition()
 
-    recognition.lang = 'en-US'
+    recognition.lang = 'en-IN'
     recognition.continuous = false
     recognition.interimResults = false
 

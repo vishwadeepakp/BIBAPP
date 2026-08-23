@@ -13,8 +13,8 @@ const SaleDetailsModal = ({ isOpen, onClose, invoiceInfo = {}, storeDetailsProp 
 
   const { data } = useGetProfile();
   storeDetailsProp = data;
-
-  const { data: saleData } = useSaleItem(invoiceInfo?.sale_id);
+  console.log("invoiceInfo?.sale_id", invoiceInfo);
+  const { data: saleData } = useSaleItem(invoiceInfo?.id);
   console.log("saleData", saleData);
   const items = saleData;
 
@@ -90,8 +90,9 @@ const SaleDetailsModal = ({ isOpen, onClose, invoiceInfo = {}, storeDetailsProp 
   const taxableValue = Math.max(0, subTotal - totalDiscount);
 
   // GST Calculation (Intra-state 18% CGST/SGST Split)
-  const cgstRate = 9;
-  const sgstRate = 9;
+  const cgstRate = items.gst_rate || 9;
+  const sgstRate = items.gst_rate || 9;
+  
   const cgstAmount = (taxableValue * cgstRate) / 100;
   const sgstAmount = (taxableValue * sgstRate) / 100;
 
@@ -365,7 +366,7 @@ const SaleDetailsModal = ({ isOpen, onClose, invoiceInfo = {}, storeDetailsProp 
                             {item.brand_name && <p className="text-[10px] text-slate-500">Brand: {item.brand_name}</p>}
                           </td>
                           {invoiceType === 'gst' && (
-                            <td className="py-2 px-3 border-r border-slate-200 text-center font-mono">{item.hsn_code || '0401'}</td>
+                            <td className="py-2 px-3 border-r border-slate-200 text-center font-mono">{item.hsn_code || '--'}</td>
                           )}
                           <td className="py-2 px-3 border-r border-slate-200 text-center font-bold">{qty}</td>
                           <td className="py-2 px-3 border-r border-slate-200 text-right">₹{unitPrice.toFixed(2)}</td>

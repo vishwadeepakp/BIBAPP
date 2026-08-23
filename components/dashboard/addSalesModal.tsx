@@ -1,15 +1,17 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import { X, Plus, Trash2, ShoppingCart, Tag } from 'lucide-react'
+import { X, Plus, Trash2, ShoppingCart, Tag, Send, QrCode } from 'lucide-react'
 import { useSaveSalesData } from '@/hooks/useAi'
 import api from '@/api/axiosInstance'
 import toast from 'react-hot-toast'
 
 export interface SaleItem {
+  id: string
   product_name: string
   brand_name: string
   hsn_code: string
+  gst_rate?: string | null
   quantity: number | ''
   unit_price: number | ''
   discount_value: number | ''
@@ -119,11 +121,10 @@ function AutoCompleteDropdown({
           onChange(e.target.value)
           setIsOpen(true)
         }}
-        className={`w-full rounded-lg border px-3 py-2 text-sm bg-white dark:bg-slate-900 outline-none transition ${
-          hasError
+        className={`w-full rounded-lg border px-3 py-2 text-sm bg-white dark:bg-slate-900 outline-none transition ${hasError
             ? 'border-red-500 bg-red-50/30'
             : 'border-slate-300 dark:border-slate-700 focus:border-emerald-500'
-        }`}
+          }`}
       />
 
       {loading && (
@@ -168,15 +169,25 @@ export function AddSalesModal({ open, onClose, onSave }: AddSalesModalProps) {
   const [paymentMode, setPaymentMode] = useState('cash')
   const [status, setStatus] = useState('completed')
   const [notes, setNotes] = useState('')
+  const [sendWhatsapp, setSendWhatsapp] = useState(true)
+
+  // UPI QR Code Modal State
+  const [showUpiModal, setShowUpiModal] = useState(false)
+
+  // Static UPI configuration (Replace with API fetched values later)
+  const MERCHANT_UPI_ID = '9876543210@upi'
+  const MERCHANT_NAME = 'Store'
 
   const [overallDiscountValue, setOverallDiscountValue] = useState<number | ''>('')
   const [overallDiscountType, setOverallDiscountType] = useState<'percent' | 'fixed'>('fixed')
 
   const [items, setItems] = useState<SaleItem[]>([
     {
+      id: "",
       product_name: '',
       brand_name: '',
       hsn_code: '',
+      gst_rate: null,
       quantity: 1,
       unit_price: '',
       discount_value: '',
@@ -216,6 +227,10 @@ export function AddSalesModal({ open, onClose, onSave }: AddSalesModalProps) {
 
   const grandTotal = Math.max(0, itemsTotalAfterDiscount - globalDiscountAmount)
 
+  // Generate standard UPI QR Code URL dynamically
+  const upiUrl = `upi://pay?pa=${encodeURIComponent(MERCHANT_UPI_ID)}&pn=${encodeURIComponent(MERCHANT_NAME)}&am=${grandTotal.toFixed(2)}&cu=INR`
+  const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(upiUrl)}`
+
   const handleSelectProduct = (index: number, selected: any) => {
     setItems((prevItems) => {
       const updated = [...prevItems]
@@ -223,10 +238,34 @@ export function AddSalesModal({ open, onClose, onSave }: AddSalesModalProps) {
 
       updated[index] = {
         ...updated[index],
+        id: selected._id || "",
         product_name: selected.name || updated[index].product_name,
         brand_name: selected.brand || updated[index].brand_name,
         unit_price: unitPrice,
         hsn_code: selected.hsn || updated[index].hsn_code,
+        gst_rate: selected.gst_rate || updated[index].gst_rate,
+        total: calculateItemTotal(
+          updated[index].quantity,
+          unitPrice,
+          updated[index].discount_value,
+          updated[index].discount_type
+        ),
+      }
+      return updated
+    })
+
+    setItems((prevItems) => {
+      const updated = [...prevItems]
+      const unitPrice = selected.sellPrice ? Number(selected.sellPrice) : updated[index].unit_price
+
+      updated[index] = {
+        ...updated[index],
+        id: selected._id || "",
+        product_name: selected.name || updated[index].product_name,
+        brand_name: selected.brand || updated[index].brand_name,
+        unit_price: unitPrice,
+        hsn_code: selected.hsn || updated[index].hsn_code,
+        gst_rate: selected.gst_rate || updated[index].gst_rate,
         total: calculateItemTotal(
           updated[index].quantity,
           unitPrice,
@@ -265,9 +304,11 @@ export function AddSalesModal({ open, onClose, onSave }: AddSalesModalProps) {
     setItems((prev) => [
       ...prev,
       {
+        id: "",
         product_name: '',
         brand_name: '',
         hsn_code: '',
+        gst_rate: null,
         quantity: 1,
         unit_price: '',
         discount_value: '',
@@ -297,8 +338,18 @@ export function AddSalesModal({ open, onClose, onSave }: AddSalesModalProps) {
     return Object.keys(newErrors).length === 0
   }
 
-  const handleSubmit = async () => {
+  const handleInitialSubmit = () => {
     if (!validateForm()) return
+
+    // If payment mode is UPI, show QR code modal first
+    if (paymentMode === 'upi') {
+      setShowUpiModal(true)
+    } else {
+      executeSave()
+    }
+  }
+
+  const executeSave = async () => {
     setIsSubmitting(true)
     try {
       const payload = {
@@ -308,6 +359,7 @@ export function AddSalesModal({ open, onClose, onSave }: AddSalesModalProps) {
         payment_mode: paymentMode,
         status,
         notes,
+        send_whatsapp: sendWhatsapp,
         items,
         summary: {
           subtotal: itemsTotalAfterDiscount,
@@ -323,6 +375,7 @@ export function AddSalesModal({ open, onClose, onSave }: AddSalesModalProps) {
 
       await saveSalesData.mutateAsync(payload)
       if (onSave) await onSave(payload)
+      setShowUpiModal(false)
       onClose()
     } catch (error) {
       console.error('Failed to submit sale:', error)
@@ -332,323 +385,395 @@ export function AddSalesModal({ open, onClose, onSave }: AddSalesModalProps) {
   }
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-black/50 backdrop-blur-sm">
-      <div className="flex min-h-full items-start justify-center p-4 sm:items-center">
-        <div className="relative w-full max-w-6xl rounded-2xl bg-white dark:bg-slate-900 shadow-2xl">
-          {/* Header */}
-          <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-700 px-6 py-5">
-            <div className="flex items-center gap-3">
-              <div className="rounded-xl bg-emerald-100 p-3 dark:bg-emerald-900/30">
-                <ShoppingCart className="h-6 w-6 text-emerald-600 dark:text-emerald-400" />
+    <>
+      <div className="fixed inset-0 z-50 overflow-y-auto bg-black/50 backdrop-blur-sm">
+        <div className="flex min-h-full items-start justify-center p-4 sm:items-center">
+          <div className="relative w-full max-w-6xl rounded-2xl bg-white dark:bg-slate-900 shadow-2xl">
+            {/* Header */}
+            <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-700 px-6 py-5">
+              <div className="flex items-center gap-3">
+                <div className="rounded-xl bg-emerald-100 p-3 dark:bg-emerald-900/30">
+                  <ShoppingCart className="h-6 w-6 text-emerald-600 dark:text-emerald-400" />
+                </div>
+                <div>
+                  <h2 className="text-xl font-bold text-slate-900 dark:text-white">Create GST Sale</h2>
+                  <p className="text-sm text-slate-500">Record sales with product & brand search</p>
+                </div>
               </div>
-              <div>
-                <h2 className="text-xl font-bold text-slate-900 dark:text-white">Create GST Sale</h2>
-                <p className="text-sm text-slate-500">Record sales with product & brand search</p>
-              </div>
-            </div>
-            <button
-              onClick={onClose}
-              className="rounded-lg p-2 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
-            >
-              <X className="h-5 w-5 text-slate-500" />
-            </button>
-          </div>
-
-          {/* Body */}
-          <div className="space-y-6 p-6">
-            {/* Customer Details */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <div>
-                <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">
-                  Customer Name *
-                </label>
-                <input
-                  type="text"
-                  placeholder="Enter customer name"
-                  value={customerName}
-                  onChange={(e) => setCustomerName(e.target.value)}
-                  className={`w-full rounded-lg border px-4 py-2 text-sm bg-transparent outline-none ${
-                    errors.customerName
-                      ? 'border-red-500'
-                      : 'border-slate-300 dark:border-slate-700 focus:border-emerald-500'
-                  }`}
-                />
-              </div>
-              <div>
-                <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">
-                  Phone
-                </label>
-                <input
-                  type="tel"
-                  placeholder="Phone number"
-                  value={customerPhone}
-                  onChange={(e) => setCustomerPhone(e.target.value)}
-                  className="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-transparent px-4 py-2 text-sm outline-none focus:border-emerald-500"
-                />
-              </div>
-              <div>
-                <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">
-                  GSTIN
-                </label>
-                <input
-                  type="text"
-                  placeholder="GSTIN Number"
-                  value={customerGstin}
-                  onChange={(e) => setCustomerGstin(e.target.value.toUpperCase())}
-                  className="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-transparent px-4 py-2 text-sm outline-none focus:border-emerald-500 uppercase"
-                />
-              </div>
+              <button
+                onClick={onClose}
+                className="rounded-lg p-2 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
+              >
+                <X className="h-5 w-5 text-slate-500" />
+              </button>
             </div>
 
-            {/* Line Items */}
-            <div>
-              <div className="mb-3 flex items-center justify-between">
-                <label className="text-sm font-semibold text-slate-800 dark:text-slate-200">
-                  Products List
-                </label>
-                <button
-                  type="button"
-                  onClick={handleAddItem}
-                  className="flex items-center gap-1.5 text-xs font-semibold text-emerald-600 hover:text-emerald-700"
-                >
-                  <Plus className="h-4 w-4" /> Add Item
-                </button>
-              </div>
-
-              <div className="space-y-3">
-                {items.map((item, index) => (
-                  <div
-                    key={index}
-                    className="grid grid-cols-12 gap-2 items-center bg-slate-50 dark:bg-slate-800/40 p-3 rounded-xl border border-slate-200 dark:border-slate-700/60"
-                  >
-                    {/* Product */}
-                    <div className="col-span-12 sm:col-span-3">
-                      <AutoCompleteDropdown
-                        placeholder="Select Product *"
-                        value={item.product_name}
-                        brandName={item.brand_name}
-                        searchType="product"
-                        hasError={!!errors[`item_${index}_name`]}
-                        onChange={(val) => handleItemChange(index, 'product_name', val)}
-                        onSelectSuggestion={(selectedItem) => handleSelectProduct(index, selectedItem)}
-                      />
-                    </div>
-
-                    {/* Brand */}
-                    <div className="col-span-6 sm:col-span-2">
-                      <AutoCompleteDropdown
-                        placeholder="Select Brand"
-                        value={item.brand_name}
-                        searchType="brand"
-                        onChange={(val) => handleItemChange(index, 'brand_name', val)}
-                        onSelectSuggestion={(selected) => {
-                          setItems((prevItems) => {
-                            const updated = [...prevItems]
-                            updated[index] = {
-                              ...updated[index],
-                              brand_name: selected.brand || '',
-                              product_name: '',
-                              unit_price: 0,
-                              hsn_code: '',
-                              total: 0,
-                            }
-                            return updated
-                          })
-                        }}
-                      />
-                    </div>
-
-                    {/* HSN */}
-                    <div className="col-span-6 sm:col-span-1">
-                      <input
-                        type="text"
-                        placeholder="HSN"
-                        value={item.hsn_code}
-                        onChange={(e) => handleItemChange(index, 'hsn_code', e.target.value)}
-                        className="w-full rounded-lg border border-slate-300 dark:border-slate-700 px-2 py-2 text-sm bg-white dark:bg-slate-900 outline-none focus:border-emerald-500"
-                      />
-                    </div>
-
-                    {/* Quantity */}
-                    <div className="col-span-4 sm:col-span-1">
-                      <input
-                        type="number"
-                        placeholder="Qty"
-                        value={item.quantity}
-                        onChange={(e) => handleItemChange(index, 'quantity', e.target.value)}
-                        className={`w-full rounded-lg border px-2 py-2 text-sm bg-white dark:bg-slate-900 outline-none ${
-                          errors[`item_${index}_qty`]
-                            ? 'border-red-500'
-                            : 'border-slate-300 dark:border-slate-700 focus:border-emerald-500'
-                        }`}
-                      />
-                    </div>
-
-                    {/* Unit Price */}
-                    <div className="col-span-4 sm:col-span-2">
-                      <input
-                        type="number"
-                        placeholder="Price"
-                        value={item.unit_price}
-                        onChange={(e) => handleItemChange(index, 'unit_price', e.target.value)}
-                        className={`w-full rounded-lg border px-2 py-2 text-sm bg-white dark:bg-slate-900 outline-none ${
-                          errors[`item_${index}_price`]
-                            ? 'border-red-500'
-                            : 'border-slate-300 dark:border-slate-700 focus:border-emerald-500'
-                        }`}
-                      />
-                    </div>
-
-                    {/* Discount */}
-                    <div className="col-span-4 sm:col-span-2 flex items-center gap-1">
-                      <input
-                        type="number"
-                        placeholder="Disc"
-                        value={item.discount_value}
-                        onChange={(e) => handleItemChange(index, 'discount_value', e.target.value)}
-                        className="w-full rounded-lg border border-slate-300 dark:border-slate-700 px-2 py-2 text-sm bg-white dark:bg-slate-900 outline-none focus:border-emerald-500"
-                      />
-                      <button
-                        type="button"
-                        onClick={() =>
-                          handleItemChange(
-                            index,
-                            'discount_type',
-                            item.discount_type === 'percent' ? 'fixed' : 'percent'
-                          )
-                        }
-                        className="rounded-lg border border-slate-300 dark:border-slate-700 px-2 py-2 text-xs font-bold bg-white dark:bg-slate-900"
-                      >
-                        {item.discount_type === 'percent' ? '%' : '₹'}
-                      </button>
-                    </div>
-
-                    {/* Total & Action */}
-                    <div className="col-span-12 sm:col-span-1 flex items-center justify-between sm:justify-end gap-2">
-                      <span className="text-sm font-semibold text-slate-800 dark:text-slate-100">
-                        ₹{item.total.toFixed(0)}
-                      </span>
-                      <button
-                        type="button"
-                        onClick={() => handleRemoveItem(index)}
-                        disabled={items.length === 1}
-                        className="p-1 text-slate-400 hover:text-red-500 disabled:opacity-30"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Bill Summary */}
-            <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/30 p-4 space-y-3">
-              <div className="flex flex-wrap items-center justify-between gap-3">
-                <div className="flex items-center gap-2">
-                  <Tag className="h-4 w-4 text-emerald-600" />
-                  <span className="text-sm font-medium">Bill Discount:</span>
+            {/* Body */}
+            <div className="space-y-6 p-6">
+              {/* Customer Details */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div>
+                  <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">
+                    Customer Name *
+                  </label>
                   <input
-                    type="number"
-                    placeholder="0"
-                    value={overallDiscountValue}
-                    onChange={(e) =>
-                      setOverallDiscountValue(
-                        e.target.value === '' ? '' : Math.max(0, Number(e.target.value))
-                      )
-                    }
-                    className="w-20 rounded-lg border border-slate-300 dark:border-slate-700 px-2 py-1 text-sm bg-white dark:bg-slate-900"
+                    type="text"
+                    placeholder="Enter customer name"
+                    value={customerName}
+                    onChange={(e) => setCustomerName(e.target.value)}
+                    className={`w-full rounded-lg border px-4 py-2 text-sm bg-transparent outline-none ${errors.customerName
+                        ? 'border-red-500'
+                        : 'border-slate-300 dark:border-slate-700 focus:border-emerald-500'
+                      }`}
                   />
+                </div>
+                <div>
+                  <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">
+                    Phone
+                  </label>
+                  <input
+                    type="tel"
+                    placeholder="Phone number"
+                    value={customerPhone}
+                    onChange={(e) => setCustomerPhone(e.target.value)}
+                    className="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-transparent px-4 py-2 text-sm outline-none focus:border-emerald-500"
+                  />
+                </div>
+                <div>
+                  <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">
+                    GSTIN
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="GSTIN Number"
+                    value={customerGstin}
+                    onChange={(e) => setCustomerGstin(e.target.value.toUpperCase())}
+                    className="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-transparent px-4 py-2 text-sm outline-none focus:border-emerald-500 uppercase"
+                  />
+                </div>
+              </div>
+
+              {/* Line Items */}
+              <div>
+                <div className="mb-3 flex items-center justify-between">
+                  <label className="text-sm font-semibold text-slate-800 dark:text-slate-200">
+                    Products List
+                  </label>
                   <button
                     type="button"
-                    onClick={() =>
-                      setOverallDiscountType(
-                        overallDiscountType === 'percent' ? 'fixed' : 'percent'
-                      )
-                    }
-                    className="rounded-lg border border-slate-300 dark:border-slate-700 px-2 py-1 text-xs font-bold bg-white dark:bg-slate-900"
+                    onClick={handleAddItem}
+                    className="flex items-center gap-1.5 text-xs font-semibold text-emerald-600 hover:text-emerald-700"
                   >
-                    {overallDiscountType === 'percent' ? '%' : '₹'}
+                    <Plus className="h-4 w-4" /> Add Item
                   </button>
                 </div>
 
-                <div className="text-right">
-                  <p className="text-xs text-slate-500">
-                    Subtotal: ₹{itemsTotalAfterDiscount.toFixed(2)}
-                  </p>
+                <div className="space-y-3">
+                  {items.map((item, index) => (
+                    <div
+                      key={index}
+                      className="grid grid-cols-12 gap-2 items-center bg-slate-50 dark:bg-slate-800/40 p-3 rounded-xl border border-slate-200 dark:border-slate-700/60"
+                    >
+                      {/* Product */}
+                      <div className="col-span-12 sm:col-span-3">
+                        <AutoCompleteDropdown
+                          placeholder="Select Product *"
+                          value={item.product_name}
+                          brandName={item.brand_name}
+                          searchType="product"
+                          hasError={!!errors[`item_${index}_name`]}
+                          onChange={(val) => handleItemChange(index, 'product_name', val)}
+                          onSelectSuggestion={(selectedItem) => handleSelectProduct(index, selectedItem)}
+                        />
+                      </div>
+
+                      {/* Brand */}
+                      <div className="col-span-6 sm:col-span-2">
+                        <AutoCompleteDropdown
+                          placeholder="Select Brand"
+                          value={item.brand_name}
+                          searchType="brand"
+                          onChange={(val) => handleItemChange(index, 'brand_name', val)}
+                          onSelectSuggestion={(selected) => {
+                            setItems((prevItems) => {
+                              const updated = [...prevItems]
+                              updated[index] = {
+                                ...updated[index],
+                                brand_name: selected.brand || '',
+                                product_name: '',
+                                unit_price: 0,
+                                hsn_code: '',
+                                gst_rate: null,
+                                total: 0,
+                                id: '',
+                              }
+                              return updated
+                            })
+                          }}
+                        />
+                      </div>
+
+                      {/* HSN */}
+                      <div className="col-span-6 sm:col-span-1">
+                        <input
+                          type="text"
+                          placeholder="HSN"
+                          value={item.hsn_code}
+                          onChange={(e) => handleItemChange(index, 'hsn_code', e.target.value)}
+                          className="w-full rounded-lg border border-slate-300 dark:border-slate-700 px-2 py-2 text-sm bg-white dark:bg-slate-900 outline-none focus:border-emerald-500"
+                        />
+                      </div>
+
+                      {/* Quantity */}
+                      <div className="col-span-4 sm:col-span-1">
+                        <input
+                          type="number"
+                          placeholder="Qty"
+                          value={item.quantity}
+                          onChange={(e) => handleItemChange(index, 'quantity', e.target.value)}
+                          className={`w-full rounded-lg border px-2 py-2 text-sm bg-white dark:bg-slate-900 outline-none ${errors[`item_${index}_qty`]
+                              ? 'border-red-500'
+                              : 'border-slate-300 dark:border-slate-700 focus:border-emerald-500'
+                            }`}
+                        />
+                      </div>
+
+                      {/* Unit Price */}
+                      <div className="col-span-4 sm:col-span-2">
+                        <input
+                          type="number"
+                          placeholder="Price"
+                          value={item.unit_price}
+                          onChange={(e) => handleItemChange(index, 'unit_price', e.target.value)}
+                          className={`w-full rounded-lg border px-2 py-2 text-sm bg-white dark:bg-slate-900 outline-none ${errors[`item_${index}_price`]
+                              ? 'border-red-500'
+                              : 'border-slate-300 dark:border-slate-700 focus:border-emerald-500'
+                            }`}
+                        />
+                      </div>
+
+                      {/* Discount */}
+                      <div className="col-span-4 sm:col-span-2 flex items-center gap-1">
+                        <input
+                          type="number"
+                          placeholder="Disc"
+                          value={item.discount_value}
+                          onChange={(e) => handleItemChange(index, 'discount_value', e.target.value)}
+                          className="w-full rounded-lg border border-slate-300 dark:border-slate-700 px-2 py-2 text-sm bg-white dark:bg-slate-900 outline-none focus:border-emerald-500"
+                        />
+                        <button
+                          type="button"
+                          onClick={() =>
+                            handleItemChange(
+                              index,
+                              'discount_type',
+                              item.discount_type === 'percent' ? 'fixed' : 'percent'
+                            )
+                          }
+                          className="rounded-lg border border-slate-300 dark:border-slate-700 px-2 py-2 text-xs font-bold bg-white dark:bg-slate-900"
+                        >
+                          {item.discount_type === 'percent' ? '%' : '₹'}
+                        </button>
+                      </div>
+
+                      {/* Total & Action */}
+                      <div className="col-span-12 sm:col-span-1 flex items-center justify-between sm:justify-end gap-2">
+                        <span className="text-sm font-semibold text-slate-800 dark:text-slate-100">
+                          ₹{item.total.toFixed(0)}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveItem(index)}
+                          disabled={items.length === 1}
+                          className="p-1 text-slate-400 hover:text-red-500 disabled:opacity-30"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </div>
 
-              <div className="flex items-center justify-between rounded-xl bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800/50 p-4">
-                <span className="text-base font-semibold text-emerald-900 dark:text-emerald-200">
-                  Grand Total
-                </span>
-                <span className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">
-                  ₹{grandTotal.toFixed(2)}
-                </span>
+              {/* Bill Summary */}
+              <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/30 p-4 space-y-3">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <div className="flex items-center gap-2">
+                    <Tag className="h-4 w-4 text-emerald-600" />
+                    <span className="text-sm font-medium">Bill Discount:</span>
+                    <input
+                      type="number"
+                      placeholder="0"
+                      value={overallDiscountValue}
+                      onChange={(e) =>
+                        setOverallDiscountValue(
+                          e.target.value === '' ? '' : Math.max(0, Number(e.target.value))
+                        )
+                      }
+                      className="w-20 rounded-lg border border-slate-300 dark:border-slate-700 px-2 py-1 text-sm bg-white dark:bg-slate-900"
+                    />
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setOverallDiscountType(
+                          overallDiscountType === 'percent' ? 'fixed' : 'percent'
+                        )
+                      }
+                      className="rounded-lg border border-slate-300 dark:border-slate-700 px-2 py-1 text-xs font-bold bg-white dark:bg-slate-900"
+                    >
+                      {overallDiscountType === 'percent' ? '%' : '₹'}
+                    </button>
+                  </div>
+
+                  <div className="text-right">
+                    <p className="text-xs text-slate-500">
+                      Subtotal: ₹{itemsTotalAfterDiscount.toFixed(2)}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-between rounded-xl bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800/50 p-4">
+                  <span className="text-base font-semibold text-emerald-900 dark:text-emerald-200">
+                    Grand Total
+                  </span>
+                  <span className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">
+                    ₹{grandTotal.toFixed(2)}
+                  </span>
+                </div>
+              </div>
+
+              {/* Meta Details, WhatsApp Toggle & Submit Action */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="mb-1 block text-sm font-medium">Payment Mode</label>
+                  <select
+                    value={paymentMode}
+                    onChange={(e) => setPaymentMode(e.target.value)}
+                    className="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-sm outline-none focus:border-emerald-500"
+                  >
+                    <option value="cash">Cash</option>
+                    <option value="upi">UPI / Online</option>
+                    <option value="card">Card</option>
+                    <option value="credit">Credit / Udhar</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="mb-1 block text-sm font-medium">Status</label>
+                  <select
+                    value={status}
+                    onChange={(e) => setStatus(e.target.value)}
+                    className="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-sm outline-none focus:border-emerald-500"
+                  >
+                    <option value="completed">Completed</option>
+                    <option value="pending">Pending</option>
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label className="mb-1 block text-sm font-medium">Notes</label>
+                <textarea
+                  rows={2}
+                  placeholder="Optional notes or terms..."
+                  value={notes}
+                  onChange={(e) => setNotes(e.target.value)}
+                  className="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 p-3 text-sm outline-none focus:border-emerald-500"
+                />
+              </div>
+
+              {/* WhatsApp Checkbox */}
+              <div className="flex items-center gap-2 pt-2">
+                <input
+                  type="checkbox"
+                  id="sendWhatsapp"
+                  checked={sendWhatsapp}
+                  onChange={(e) => setSendWhatsapp(e.target.checked)}
+                  className="h-4 w-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500 dark:border-slate-700 dark:bg-slate-900 cursor-pointer"
+                />
+                <label htmlFor="sendWhatsapp" className="text-sm font-medium text-slate-700 dark:text-slate-300 flex items-center gap-1.5 cursor-pointer">
+                  <Send className="h-4 w-4 text-emerald-600" /> Send Bill / Invoice via WhatsApp
+                </label>
+              </div>
+
+              <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-200 dark:border-slate-700">
+                <button
+                  type="button"
+                  onClick={onClose}
+                  className="rounded-lg px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  disabled={isSubmitting}
+                  onClick={handleInitialSubmit}
+                  className="rounded-lg bg-emerald-600 px-5 py-2 text-sm font-medium text-white hover:bg-emerald-700 disabled:opacity-50"
+                >
+                  {isSubmitting ? 'Saving...' : paymentMode === 'upi' ? 'Pay via UPI & Save' : 'Save Sale'}
+                </button>
               </div>
             </div>
+          </div>
+        </div>
+      </div>
 
-            {/* Meta Details & Submit Action */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label className="mb-1 block text-sm font-medium">Payment Mode</label>
-                <select
-                  value={paymentMode}
-                  onChange={(e) => setPaymentMode(e.target.value)}
-                  className="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-sm outline-none focus:border-emerald-500"
-                >
-                  <option value="cash">Cash</option>
-                  <option value="upi">UPI / Online</option>
-                  <option value="card">Card</option>
-                  <option value="credit">Credit / Udhar</option>
-                </select>
+      {/* UPI QR Modal */}
+      {showUpiModal && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+          <div className="w-full max-w-sm rounded-2xl bg-white dark:bg-slate-900 p-6 shadow-2xl text-center space-y-4 border border-slate-200 dark:border-slate-800">
+            <div className="flex items-center justify-between border-b pb-3 border-slate-100 dark:border-slate-800">
+              <div className="flex items-center gap-2">
+                <QrCode className="h-5 w-5 text-emerald-600" />
+                <h3 className="font-bold text-slate-900 dark:text-white">Scan & Pay via UPI</h3>
               </div>
-
-              <div>
-                <label className="mb-1 block text-sm font-medium">Status</label>
-                <select
-                  value={status}
-                  onChange={(e) => setStatus(e.target.value)}
-                  className="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-sm outline-none focus:border-emerald-500"
-                >
-                  <option value="completed">Completed</option>
-                  <option value="pending">Pending</option>
-                </select>
-              </div>
+              <button
+                type="button"
+                onClick={() => setShowUpiModal(false)}
+                className="text-slate-400 hover:text-slate-600"
+              >
+                <X className="h-5 w-5" />
+              </button>
             </div>
 
-            <div>
-              <label className="mb-1 block text-sm font-medium">Notes</label>
-              <textarea
-                rows={2}
-                placeholder="Optional notes or terms..."
-                value={notes}
-                onChange={(e) => setNotes(e.target.value)}
-                className="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 p-3 text-sm outline-none focus:border-emerald-500"
+            <div className="p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl inline-block border border-slate-100 dark:border-slate-700">
+              <img
+                src={qrApiUrl}
+                alt="UPI QR Code"
+                className="h-48 w-48 mx-auto rounded-lg"
               />
             </div>
 
-            <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-200 dark:border-slate-700">
+            <div className="space-y-1">
+              <p className="text-xs text-slate-500">Scan using GPay, PhonePe, Paytm or Any UPI App</p>
+              <p className="text-2xl font-black text-emerald-600 dark:text-emerald-400">
+                ₹{grandTotal.toFixed(2)}
+              </p>
+              <p className="text-xs font-mono bg-slate-100 dark:bg-slate-800 py-1 px-2 rounded inline-block text-slate-600 dark:text-slate-300">
+                UPI ID: {MERCHANT_UPI_ID}
+              </p>
+            </div>
+
+            <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-100 dark:border-slate-800">
               <button
                 type="button"
-                onClick={onClose}
-                className="rounded-lg px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800"
+                onClick={() => setShowUpiModal(false)}
+                className="w-1/2 rounded-lg py-2 text-sm font-medium text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-700"
               >
                 Cancel
               </button>
               <button
                 type="button"
                 disabled={isSubmitting}
-                onClick={handleSubmit}
-                className="rounded-lg bg-emerald-600 px-5 py-2 text-sm font-medium text-white hover:bg-emerald-700 disabled:opacity-50"
+                onClick={executeSave}
+                className="w-1/2 rounded-lg bg-emerald-600 py-2 text-sm font-medium text-white hover:bg-emerald-700 disabled:opacity-50"
               >
-                {isSubmitting ? 'Saving...' : 'Save Sale'}
+                {isSubmitting ? 'Confirming...' : 'OK (Paid)'}
               </button>
             </div>
           </div>
         </div>
-      </div>
-    </div>
+      )}
+    </>
   )
 }

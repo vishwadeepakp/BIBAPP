@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
-import { X, BarChart3, Package, Receipt, LogOut,  User } from 'lucide-react'
+import { X, BarChart3, Package, Receipt, LogOut, User } from 'lucide-react'
 
 import { useLanguage } from '@/components/contexts/language-context'
 import { useAuth } from '@/components/contexts/auth-context'
@@ -46,6 +46,7 @@ export function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
       label: 'Profile',
       icon: User,
       isActive: pathname === '/dashboard/profile',
+      blink: true
     },
     {
       href: '/dashboard/inventory',
@@ -130,6 +131,7 @@ export function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
                 >
                   <Icon className="w-5 h-5" />
                   <span className="flex items-center gap-2">
+
                     {item.label}
                     <span className="text-xs font-medium text-amber-600 dark:text-amber-400">{t('inventory.comingSoon')}</span>
                   </span>
@@ -149,6 +151,15 @@ export function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
               >
                 <Icon className="w-5 h-5" />
                 {item.label}
+                {item.blink &&
+                  <span className="relative flex h-2.5 w-2.5 items-center justify-center">
+                    {/* Glowing Outer Ping (Blink Effect) */}
+                    <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75 dark:bg-cyan-400" />
+
+                    {/* Solid Core Dot */}
+                    <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500 dark:bg-cyan-500" />
+                  </span>
+                }
               </Link>
             )
           })}

@@ -91,12 +91,33 @@ export function Header() {
 
         <button
           onClick={toggleListening}
-          className="cursor-pointer flex items-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 to-violet-600 px-4 py-2.5 text-white shadow-lg hover:scale-105 transition"
+          className="group relative inline-flex items-center gap-2.5 overflow-hidden rounded-xl bg-gradient-to-r from-blue-600 via-indigo-600 to-violet-600 px-5 py-2.5 text-white shadow-lg shadow-indigo-500/30 transition-all duration-300 hover:scale-105 hover:shadow-xl hover:shadow-indigo-500/50 active:scale-95 dark:border dark:border-slate-800 dark:bg-slate-900/90 dark:bg-none dark:shadow-2xl dark:hover:border-cyan-500/50 dark:hover:shadow-cyan-500/25"
         >
-          <Bot className="h-5 w-5" />
-          <span className="hidden sm:block font-medium">
-            Akash AI
-          </span>
+          {/* Dark Mode Background Backlight Glow */}
+          <div className="absolute -inset-0.5 hidden rounded-xl bg-gradient-to-r from-cyan-500 via-indigo-500 to-purple-500 opacity-0 blur-md transition-all duration-500 group-hover:opacity-100 dark:block dark:opacity-40" />
+
+          {/* Button Content */}
+          <div className="relative flex items-center gap-2.5">
+            <div className="relative">
+              <Bot className="h-5 w-5 text-white transition-transform duration-300 group-hover:rotate-12 group-hover:scale-110 dark:text-cyan-400" />
+
+              {/* Live Active Pulse Dot */}
+              <span className="absolute -top-1 -right-1 flex h-2 w-2">
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-cyan-200 opacity-75 dark:bg-cyan-400"></span>
+                <span className="relative inline-flex h-2 w-2 rounded-full bg-white dark:bg-cyan-400"></span>
+              </span>
+            </div>
+
+            {/* Text Label */}
+            <span className="hidden font-bold tracking-wide sm:block">
+              <span className="text-white dark:bg-gradient-to-r dark:from-cyan-400 dark:to-purple-400 dark:bg-clip-text dark:text-transparent">
+                Akash AI
+              </span>
+            </span>
+          </div>
+
+          {/* Shimmer Light Effect on Hover */}
+          <span className="absolute inset-0 -translate-x-full rounded-xl bg-gradient-to-r from-transparent via-white/20 to-transparent transition-transform duration-1000 ease-in-out group-hover:translate-x-full" />
         </button>
 
         {/* Theme */}
