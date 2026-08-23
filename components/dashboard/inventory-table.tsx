@@ -6,7 +6,7 @@ import { Search, Plus } from 'lucide-react'
 import { AddInventoryModal } from './add-inventory-modal'
 import { useSearchParams, useRouter, usePathname } from 'next/navigation'
 import { useInventoryTable } from '@/hooks/useAi'
-import { OcrCameraModal } from '@/components/dashboard/ocrCameraModal';
+import { OcrCameraModal } from '@/components/dashboard/ocr-camera-modal';
 interface InventoryItem {
   id: string
   name: string
