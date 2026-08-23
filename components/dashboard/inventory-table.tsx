@@ -6,7 +6,7 @@ import { Search, Plus } from 'lucide-react'
 import { AddInventoryModal } from './add-inventory-modal'
 import { useSearchParams, useRouter, usePathname } from 'next/navigation'
 import { useInventoryTable } from '@/hooks/useAi'
-
+import { OcrCameraModal } from '@/components/dashboard/OcrCameraModal';
 interface InventoryItem {
   id: string
   name: string
@@ -41,6 +41,7 @@ export function InventoryTable() {
   const [searchTerm, setSearchTerm] = useState('')
   const [currentPage, setCurrentPage] = useState(1)
   const [openModal, setOpenModal] = useState(false)
+  const [openOCRModal, setOpenOCRModal] = useState(false)
 
   const itemsPerPage = 10
 
@@ -190,13 +191,12 @@ export function InventoryTable() {
 
           <button
             type="button"
-            disabled
-            className="flex items-center gap-2 rounded-lg border border-gray-300 dark:border-slate-600 bg-gray-100 dark:bg-slate-700 px-5 py-3 text-sm text-slate-600 dark:text-slate-300 opacity-70 cursor-not-allowed"
-            title="Coming soon"
+            onClick={()=>{setOpenOCRModal(true)}}
+            className="flex items-center gap-2 rounded-lg bg-blue-600 px-5 py-3 text-white hover:bg-blue-700 transition cursor-pointer"
           >
             <span>🧾</span>
             {t('inventory.aiBillScan')}
-            <span className="text-xs font-medium text-amber-600 dark:text-amber-400">{t('inventory.comingSoon')}</span>
+            {/* <span className="text-xs font-medium text-amber-600 dark:text-amber-400">{t('inventory.comingSoon')}</span> */}
           </button>
         </div>
 
@@ -240,13 +240,13 @@ export function InventoryTable() {
                   <th className="px-6 py-4 text-center text-sm font-semibold text-slate-900 dark:text-white">
                     {t('inventory.expiry')}
                   </th>
-                   <th className="px-6 py-4 text-center text-sm font-semibold text-slate-900 dark:text-white">
+                  <th className="px-6 py-4 text-center text-sm font-semibold text-slate-900 dark:text-white">
                     {t('inventory.sellPrice')}
                   </th>
-                   <th className="px-6 py-4 text-center text-sm font-semibold text-slate-900 dark:text-white">
+                  <th className="px-6 py-4 text-center text-sm font-semibold text-slate-900 dark:text-white">
                     {t('inventory.buyingPrice')}
                   </th>
-                     <th className="px-6 py-4 text-center text-sm font-semibold text-slate-900 dark:text-white">
+                  <th className="px-6 py-4 text-center text-sm font-semibold text-slate-900 dark:text-white">
                     {t('sales.date')}
                   </th>
                   {/* <th className="px-6 _per_p_p_p text-left text-sm font-semibold text-slate-900 dark:text-white">
@@ -274,7 +274,7 @@ export function InventoryTable() {
                       <td className="px-6 py-4 text-sm text-slate-900 dark:text-white font-medium">
                         {item.name}
                       </td>
-                       <td className="px-6 py-4 text-sm text-slate-900 dark:text-white font-medium">
+                      <td className="px-6 py-4 text-sm text-slate-900 dark:text-white font-medium">
                         {item.brand || '—'}
                       </td>
                       <td className="px-6 py-4 text-sm text-slate-900 dark:text-white font-medium">
@@ -364,6 +364,11 @@ export function InventoryTable() {
         open={openModal}
         onClose={() => closeModal()}
         jsonObject={items}
+      />
+      <OcrCameraModal
+        isOpen={openOCRModal}
+        onClose={() => setOpenOCRModal(false)}
+        OnCaptureSuccess={()=>{}}
       />
     </>
   )

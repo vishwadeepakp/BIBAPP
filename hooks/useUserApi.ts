@@ -55,3 +55,23 @@ export const useGetProfile = () => {
         refetchOnWindowFocus: false,
     });
 };
+
+export const useGetSalesAnalytics = ({ startDate, endDate }: any = {}) => {
+  return useQuery({
+    // QueryKey me params include kiye hain taaki date badalte hi auto-refetch ho
+    queryKey: ['getSalesAnalytics', { startDate, endDate }],
+    queryFn: async () => {
+      
+      const response = await api.get("/ai/sales/analytics", {
+        params: {
+          ...(startDate && { startDate }),
+          ...(endDate && { endDate }),
+        }
+      });
+      
+      return response.data.data;
+    },
+    staleTime: 0,
+    refetchOnWindowFocus: false,
+  });
+};

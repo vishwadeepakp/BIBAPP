@@ -3,99 +3,147 @@
 import { useState } from 'react'
 import { useLanguage } from '@/components/contexts/language-context'
 import { SalesTable } from '@/components/dashboard/sales-table'
+import { useGetSalesAnalytics } from '@/hooks/useUserApi'
+import { Calendar, RefreshCw } from 'lucide-react'
 
-interface SalesTransaction {
-  id: string
-  orderId: string
-  date: string
-  amount: number
-  status: 'paid' | 'pending'
+// Default past 30 days calculation
+const getDefaultDates = () => {
+  const end = new Date()
+  const start = new Date()
+  start.setDate(end.getDate() - 30)
+  
+  return {
+    defaultStart: start.toISOString().split('T')[0],
+    defaultEnd: end.toISOString().split('T')[0],
+  }
 }
-
-const SAMPLE_SALES: SalesTransaction[] = [
-  { id: '1', orderId: 'ORD-2024-001', date: 'Jan 15, 2024', amount: 5000, status: 'paid' },
-  { id: '2', orderId: 'ORD-2024-002', date: 'Jan 14, 2024', amount: 3500, status: 'paid' },
-  { id: '3', orderId: 'ORD-2024-003', date: 'Jan 13, 2024', amount: 7200, status: 'pending' },
-  { id: '4', orderId: 'ORD-2024-004', date: 'Jan 12, 2024', amount: 4800, status: 'paid' },
-  { id: '5', orderId: 'ORD-2024-005', date: 'Jan 11, 2024', amount: 6100, status: 'pending' },
-  { id: '6', orderId: 'ORD-2024-006', date: 'Jan 10, 2024', amount: 5400, status: 'paid' },
-  { id: '7', orderId: 'ORD-2024-007', date: 'Jan 9, 2024', amount: 8900, status: 'paid' },
-  { id: '8', orderId: 'ORD-2024-008', date: 'Jan 8, 2024', amount: 4200, status: 'pending' },
-]
 
 export function SalesLog() {
   const { t } = useLanguage()
-  const [currentPage, setCurrentPage] = useState(1)
-  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc')
 
-  const itemsPerPage = 5
+  // Default set to Last 30 Days (1 Month)
+  const { defaultStart, defaultEnd } = getDefaultDates()
+  const [startDate, setStartDate] = useState(defaultStart)
+  const [endDate, setEndDate] = useState(defaultEnd)
 
-  const sortedSales = [...SAMPLE_SALES].sort((a, b) => {
-    const comparison = new Date(b.date).getTime() - new Date(a.date).getTime()
-    return sortOrder === 'desc' ? comparison : -comparison
+  // 🔴 Purana useQuery & fetchSalesSummary hata kar bas ye 1 line call karni hai:
+  const { data, isLoading, isError, error, refetch } = useGetSalesAnalytics({
+    startDate,
+    endDate,
   })
 
-  const totalPages = Math.ceil(sortedSales.length / itemsPerPage)
-  const startIndex = (currentPage - 1) * itemsPerPage
-  const displayedItems = sortedSales.slice(startIndex, startIndex + itemsPerPage)
-
-  const getStatusStyles = (status: string) => {
-    switch (status) {
-      case 'paid':
-        return 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400'
-      case 'pending':
-        return 'bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400'
-      default:
-        return ''
-    }
+  const handleReset = () => {
+    setStartDate(defaultStart)
+    setEndDate(defaultEnd)
   }
 
-  const getStatusLabel = (status: string) => {
-    switch (status) {
-      case 'paid':
-        return t('sales.paid')
-      case 'pending':
-        return t('sales.pending')
-      default:
-        return status
-    }
+  // Error State
+  if (isError) {
+    return (
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-3xl font-bold text-slate-900 dark:text-white">
+            {t('dashboard.sales')}
+          </h1>
+          <p className="text-slate-600 dark:text-slate-400 mt-1">
+            View all transactions and payment status
+          </p>
+        </div>
+
+        <div className="p-4 bg-red-50 dark:bg-red-950/50 border border-red-200 dark:border-red-800 rounded-2xl text-red-600 dark:text-red-400 flex items-center justify-between shadow-sm">
+          <p className="text-sm font-medium">Failed to load summary: {(error as Error).message}</p>
+          <button
+            onClick={() => refetch()}
+            className="px-3 py-1.5 bg-red-100 dark:bg-red-900/80 text-red-700 dark:text-red-200 rounded-lg text-xs font-semibold hover:bg-red-200 transition-colors"
+          >
+            Retry
+          </button>
+        </div>
+
+        <SalesTable />
+      </div>
+    )
   }
 
-  const totalAmount = SAMPLE_SALES.reduce((sum, item) => sum + item.amount, 0)
-  const paidAmount = SAMPLE_SALES.filter((item) => item.status === 'paid').reduce(
-    (sum, item) => sum + item.amount,
-    0
-  )
+  // API response keys check kar lijiye (totalAmount / paidAmount ya aapke backend me jo naam ho)
+  const totalAmount = data?.totalAmount ?? 0
+  const paidAmount = data?.paidAmount ?? 0
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold text-slate-900 dark:text-white">
-          {t('dashboard.sales')}
-        </h1>
-        <p className="text-slate-600 dark:text-slate-400 mt-1">
-          View all transactions and payment status
-        </p>
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-bold text-slate-900 dark:text-white tracking-tight">
+            {t('dashboard.sales')}
+          </h1>
+          <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">
+            View all transactions and payment status
+          </p>
+        </div>
+
+        {/* Date Filter Bar */}
+        <div className="flex items-center gap-2 bg-white dark:bg-slate-900 p-1.5 pl-3.5 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm hover:border-slate-300 dark:hover:border-slate-700 transition-all">
+          <div className="flex items-center gap-2 text-slate-400 mr-1">
+            <Calendar className="w-4 h-4 text-slate-500 dark:text-slate-400" />
+            <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider hidden sm:inline">Range</span>
+          </div>
+
+          <div className="flex items-center gap-1.5 bg-slate-50 dark:bg-slate-800/60 px-2.5 py-1.5 rounded-xl border border-slate-200/60 dark:border-slate-700/60">
+            <input
+              type="date"
+              value={startDate}
+              onChange={(e) => setStartDate(e.target.value)}
+              className="bg-transparent text-xs font-medium text-slate-700 dark:text-slate-200 focus:outline-none cursor-pointer"
+            />
+            <span className="text-slate-300 dark:text-slate-600 text-xs font-semibold">–</span>
+            <input
+              type="date"
+              value={endDate}
+              onChange={(e) => setEndDate(e.target.value)}
+              className="bg-transparent text-xs font-medium text-slate-700 dark:text-slate-200 focus:outline-none cursor-pointer"
+            />
+          </div>
+
+          {(startDate !== defaultStart || endDate !== defaultEnd) && (
+            <button
+              onClick={handleReset}
+              title="Reset to last 30 days"
+              className="p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-all"
+            >
+              <RefreshCw className="w-3.5 h-3.5" />
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="bg-white dark:bg-slate-800 rounded-xl p-6 shadow-md border border-gray-200 dark:border-slate-700">
-          <p className="text-slate-600 dark:text-slate-400 text-sm font-medium">Total Revenue</p>
-          <p className="text-3xl font-bold text-slate-900 dark:text-white mt-2">
-            ₹{totalAmount.toLocaleString()}
+        <div className="bg-white dark:bg-slate-900 rounded-2xl p-6 shadow-sm border border-slate-200/80 dark:border-slate-800 transition-all">
+          <p className="text-slate-500 dark:text-slate-400 text-xs font-semibold uppercase tracking-wider">Total Revenue</p>
+          <p className="text-3xl font-extrabold text-slate-900 dark:text-white mt-2 tracking-tight">
+            {isLoading ? (
+              <span className="inline-block w-28 h-8 bg-slate-100 dark:bg-slate-800 animate-pulse rounded-lg" />
+            ) : (
+              '₹' + totalAmount.toLocaleString()
+            )}
           </p>
-          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">All transactions</p>
+          <p className="text-xs text-slate-400 dark:text-slate-500 mt-1.5">Selected period transactions</p>
         </div>
-        <div className="bg-white dark:bg-slate-800 rounded-xl p-6 shadow-md border border-gray-200 dark:border-slate-700">
-          <p className="text-slate-600 dark:text-slate-400 text-sm font-medium">Amount Received</p>
-          <p className="text-3xl font-bold text-green-600 dark:text-green-400 mt-2">
-            ₹{paidAmount.toLocaleString()}
+
+        <div className="bg-white dark:bg-slate-900 rounded-2xl p-6 shadow-sm border border-slate-200/80 dark:border-slate-800 transition-all">
+          <p className="text-slate-500 dark:text-slate-400 text-xs font-semibold uppercase tracking-wider">Amount Received</p>
+          <p className="text-3xl font-extrabold text-emerald-600 dark:text-emerald-400 mt-2 tracking-tight">
+            {isLoading ? (
+              <span className="inline-block w-28 h-8 bg-slate-100 dark:bg-slate-800 animate-pulse rounded-lg" />
+            ) : (
+              '₹' + paidAmount.toLocaleString()
+            )}
           </p>
-          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Paid transactions</p>
+          <p className="text-xs text-slate-400 dark:text-slate-500 mt-1.5">Paid transactions</p>
         </div>
       </div>
 
+      {/* Independent SalesTable */}
       <SalesTable />
     </div>
   )
