@@ -1,6 +1,7 @@
-import React, { useRef, useState, useEffect } from 'react';
+import { useRef, useState, useEffect } from 'react';
+import { useSaveOcrData } from '@/hooks/useAi';
 
-export const OcrCameraModal = ({ isOpen, onClose, OnCaptureSuccess }) => {
+export const OcrCameraModal = ({ isOpen, onClose }) => {
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
   const fileInputRef = useRef(null);
@@ -9,6 +10,10 @@ export const OcrCameraModal = ({ isOpen, onClose, OnCaptureSuccess }) => {
   const [capturedImage, setCapturedImage] = useState(null);
   const [isCameraActive, setIsCameraActive] = useState(false);
   const [cameraError, setCameraError] = useState('');
+
+  const saveOcrData = useSaveOcrData()
+
+
 
   // 1. Start Camera Feed on Modal Open
   useEffect(() => {
@@ -83,11 +88,19 @@ export const OcrCameraModal = ({ isOpen, onClose, OnCaptureSuccess }) => {
   };
 
   // 4. Submit Image to Parent Handler (Kafka / Server API)
-  const handleConfirmUpload = () => {
+  const handleConfirmUpload = async () => {
     if (!capturedImage) return;
-
+    const { processBillAction } = await import('../../app/actions/ocr-action');
+    const result = await processBillAction(capturedImage);
+    console.log("result", result)
+    if (result.success) {
+      saveOcrData.mutate(result);
+    }else{
+      console.log(result.error)
+    }
     // Send base64/blob to parent component to initiate Kafka job
-    OnCaptureSuccess(capturedImage);
+    // OnCaptureSuccess(capturedImage);
+
     handleCloseModal();
   };
 
@@ -107,7 +120,7 @@ export const OcrCameraModal = ({ isOpen, onClose, OnCaptureSuccess }) => {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-75 p-4">
       <div className="relative w-full max-w-lg rounded-xl bg-white shadow-2xl overflow-hidden flex flex-col">
-        
+
         {/* Header */}
         <div className="flex justify-between items-center px-4 py-3 bg-gray-900 text-white">
           <h3 className="text-lg font-semibold">Scan Bill (OCR)</h3>
@@ -185,9 +198,8 @@ export const OcrCameraModal = ({ isOpen, onClose, OnCaptureSuccess }) => {
               <button
                 onClick={handleCapture}
                 disabled={!isCameraActive}
-                className={`py-3 px-6 rounded-full font-bold text-white shadow-lg ${
-                  isCameraActive ? 'bg-blue-600 hover:bg-blue-700' : 'bg-gray-400 cursor-not-allowed'
-                }`}
+                className={`py-3 px-6 rounded-full font-bold text-white shadow-lg ${isCameraActive ? 'bg-blue-600 hover:bg-blue-700' : 'bg-gray-400 cursor-not-allowed'
+                  }`}
               >
                 Capture
               </button>

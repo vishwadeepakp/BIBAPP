@@ -181,11 +181,6 @@ export function SalesTable() {
     return (
         <>
             <div className="space-y-6">
-                <div>
-                    <p className="text-slate-600 dark:text-slate-400 mt-1">
-                        Manage your product stock efficiently and keep track of inventory levels in real-time.
-                    </p>
-                </div>
                 <div className="flex flex-wrap items-center gap-3">
                     <button
                         onClick={() => setIsModalOpen(true)}

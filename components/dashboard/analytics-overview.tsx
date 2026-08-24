@@ -2,6 +2,7 @@
 
 import { useLanguage } from '@/components/contexts/language-context'
 import { TrendingUp, Package, AlertCircle } from 'lucide-react'
+import { SalesLog } from '@/components/dashboard/sales-analytics'
 
 interface AnalyticsCard {
   icon: React.ComponentType<{ className?: string }>
@@ -54,6 +55,8 @@ export function AnalyticsOverview() {
           Overview of your business metrics
         </p>
       </div>
+        <SalesLog />
+
 
       {/* Analytics Cards Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

@@ -359,6 +359,36 @@ export const useSaleItem = (saleId: string) => {
     });
 };
 
+export const useSaveOcrData = () => {
+
+    return useMutation({
+        mutationFn: async (payload: any) => {
+            toast.loading("Saving...", {
+                id: "useSaveOcrData-Saving",
+            });
+
+            try {
+                // Axios Call: URL का Prefix, Content-Type, और credentials ऑटोमैटिक 'api' संभालेगा
+                const response = await api.post("/ai/inventory/save-ocr-data", payload);
+                const data = response.data;
+                toast.dismiss("useSaveOcrData-Saving");
+                toast.success('Saved');
+                return data;
+            } catch (error: any) {
+                toast.dismiss("useSaveOcrData-Saving");
+                // Axios error handling
+                const errorMessage =
+                    error?.response?.data?.error ||
+                    error?.response?.data?.message ||
+                    error?.message ||
+                    "Failed to Save Data";
+                throw new Error(errorMessage);
+            }
+        },
+    });
+};
+
+
 
 function speakText(text: string) {
     // Check अगर ब्राउज़र Speech Synthesis सपोर्ट करता है
@@ -379,3 +409,4 @@ function speakText(text: string) {
         console.warn("आपका ब्राउज़र Text-to-Speech सपोर्ट नहीं करता।");
     }
 }
+

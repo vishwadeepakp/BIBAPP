@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
-import { X, BarChart3, Package, Receipt, LogOut, User } from 'lucide-react'
+import { X, BarChart3, Package, Receipt, LogOut, User, Users } from 'lucide-react'
 
 import { useLanguage } from '@/components/contexts/language-context'
 import { useAuth } from '@/components/contexts/auth-context'
@@ -47,6 +47,12 @@ export function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
       icon: User,
       isActive: pathname === '/dashboard/profile',
       blink: true
+    },
+    {
+      href: '/dashboard/staff-members',
+      label: 'Staff Members',
+      icon: Users,
+      isActive: pathname === '/dashboard/staff-members',
     },
     {
       href: '/dashboard/inventory',

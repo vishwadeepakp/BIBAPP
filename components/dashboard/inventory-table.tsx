@@ -124,32 +124,6 @@ export function InventoryTable() {
     return 'in-stock'
   }
 
-  const getStatusStyles = (status: string) => {
-    switch (status) {
-      case 'in-stock':
-        return 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400'
-      case 'low-stock':
-        return 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400'
-      case 'out-of-stock':
-        return 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400'
-      default:
-        return ''
-    }
-  }
-
-  const getStatusLabel = (status: string) => {
-    switch (status) {
-      case 'in-stock':
-        return t('inventory.inStock')
-      case 'low-stock':
-        return t('inventory.lowStock')
-      case 'out-of-stock':
-        return t('inventory.outOfStock')
-      default:
-        return status
-    }
-  }
-
   const closeModal = () => {
     route.push(pathname)
     setTimeout(() => {
@@ -368,7 +342,6 @@ export function InventoryTable() {
       <OcrCameraModal
         isOpen={openOCRModal}
         onClose={() => setOpenOCRModal(false)}
-        OnCaptureSuccess={()=>{}}
       />
     </>
   )
