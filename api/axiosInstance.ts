@@ -1,9 +1,42 @@
-import axios from 'axios';
+import axios, { type InternalAxiosRequestConfig } from 'axios';
+
+const getStoredAccessToken = (): string | null => {
+  if (typeof window === 'undefined') {
+    return null;
+  }
+
+  try {
+    const savedUser = localStorage.getItem('accessToken');
+    if (!savedUser) {
+      return null;
+    }
+
+    return savedUser || null;
+  } catch {
+    return null;
+  }
+};
 
 // 1. Dedicated Axios Instance
 const api = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_GATWAY,
   withCredentials: true, // <-- कुकीज़ ऑटो-सेंड करने के लिए सबसे ज़रूरी!
+});
+
+api.interceptors.request.use((config: InternalAxiosRequestConfig) => {
+  const accessToken = getStoredAccessToken();
+
+  if (!accessToken) {
+    return config;
+  }
+
+  config.headers = config.headers ?? {};
+
+  if (!config.headers.Authorization) {
+    config.headers.Authorization = `Bearer ${accessToken}`;
+  }
+
+  return config;
 });
 
 // 2. Response Interceptor (401 हैंडल करने के लिए)

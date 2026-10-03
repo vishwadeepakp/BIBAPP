@@ -39,8 +39,12 @@ export const useVerifyOtp = () => {
         const errorData = await response.json();
         throw new Error(errorData.message || errorData.error || "Failed to verify OTP");
       }
-
-      return response.json();
+      const data = await response.json();
+      console.log("data", data);
+      if(data?.data?.accessToken) {
+        localStorage.setItem("accessToken", data.data.accessToken);
+      }
+      return data;
     },
   });
 };
